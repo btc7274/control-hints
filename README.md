@@ -14,7 +14,7 @@ An open-source FPS demo game is available to test the capabilities of Control Hi
 [Control Hints: FPS - Roblox](https://www.roblox.com/games/134115175730196/Control-Hints-FPS)
 
 ### ✅ Ready in Four Steps
-1. Grab the free model: [Control Hints](https://create.roblox.com/store/asset/87894581499695/Control-Hints)
+1. Grab the free model from [Creator Store](https://create.roblox.com/store/asset/87894581499695/Control-Hints) or download the .rbxm file in the repo
 2. Ungroup the folders in the model in their correct locations
 3. Group all of your InputContexts into a Folder
 4. Set ```IAS_SETUP_FOLDER``` in the LocalScript to your new Folder
@@ -30,6 +30,3 @@ By default, the name of the InputAction is displayed, but this can be overridden
 
 ### ⚠️ Known Limitations
 - Included icons are only for commonly-used keys. Things like numpad keys or function keys are excluded.
-
-
-If you integrate this into your project, I'd love to hear about it. I'm curious. By the way, reply to this post if you need support or are giving feedback.
