@@ -25,7 +25,7 @@ An open-source FPS demo game is available to test the capabilities of Control Hi
 
 <img width="184" height="120" alt="Screenshot 2026-02-14 at 6 59 52 AM" src="https://github.com/user-attachments/assets/e48aff72-9df5-4d51-ab86-691ea0a3d853" />
 
-By default, the name of the InputAction is displayed, but this can be overridden by setting the CustomName attribute (string) for the InputAction. You can also set the CustomOrder attribute (number) can override auto-sort.
+By default, the name of the InputAction is displayed, but this can be overridden by setting the CustomName attribute (string) for the InputAction. You can also set the CustomOrder attribute (number) to override the auto-sort.
 </details>
 
 ### ⚠️ Known Limitations
