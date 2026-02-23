@@ -16,12 +16,12 @@ An open-source FPS demo game is available to test the capabilities of Control Hi
 ### ✅ Ready in Four Steps
 1. Grab the free model from [Creator Store](https://create.roblox.com/store/asset/87894581499695/Control-Hints) or download the .rbxm file in the repo
 2. Ungroup the folders in the model in their correct locations
-3. Group all of your InputContexts into a Folder
-4. Set ```IAS_SETUP_FOLDER``` in the LocalScript to your new Folder
+3. Group all of your InputContexts into a Folder under StarterPlayer/StarterPlayerScripts
+4. Set ```IAS_SETUP``` in the given LocalScript to your new Folder
 
 
 <details>
-<summary>Example IAS Setup Folder</summary>
+<summary>Example IAS Setup</summary>
 
 <img width="184" height="120" alt="Screenshot 2026-02-14 at 6 59 52 AM" src="https://github.com/user-attachments/assets/e48aff72-9df5-4d51-ab86-691ea0a3d853" />
 
