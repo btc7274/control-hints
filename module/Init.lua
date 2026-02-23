@@ -1,19 +1,20 @@
--- Put me anywhere a LocalScript can go
+-- Put me under StarterPlayer/StarterPlayerScripts
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 
 local player = Players.LocalPlayer
 assert(player)
-local playerGui = player.PlayerGui
 
 
 
 -- Adjust as needed:
 local ControlHints = require(ReplicatedStorage.ControlHints)
-local IAS_SETUP_FOLDER = playerGui:WaitForChild("InputContexts")
+local IAS_SETUP = player.PlayerScripts:WaitForChild("IasSetup")
+
+-- 	^^ if IAS_SETUP is under StarterGui, it will reset on death,
+--	   so any old Control Hints UI will not update
 
 
 
 
-local newScreenGui = ControlHints.CreateUI(IAS_SETUP_FOLDER, playerGui)
--- Toggle Enabled on newScreenGui if you want to show/hide
+local newUi = ControlHints.CreateUI(IAS_SETUP, player.PlayerGui)
