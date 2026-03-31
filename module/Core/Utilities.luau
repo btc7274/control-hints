@@ -49,14 +49,14 @@ function Utilities.GetIconId(keyCode: Enum.KeyCode, specificPlatform: ("keyboard
 	local suffix = useResponsive and "_pressed" or ""
 	local tableName = platform .. suffix
 	local iconTable = iconSet[tableName]
-	
+
 	if useResponsive then
-		assert(next(iconTable), "Settings.ENABLE_RESPONSIVE is true, but the icon set does not have any tables with the '_pressed' suffix for the platform '" .. platform .. "'!")
+		assert(iconTable and next(iconTable), "Settings.ENABLE_RESPONSIVE is true, but the icon set does not have any tables with the '_pressed' suffix for the platform '" .. platform .. "'!")
 	end
-	
+
 	local iconId = iconTable[keyCode] or ""
 	if iconId == "" and keyCode ~= Enum.KeyCode.Unknown then
-		warn("Missing icon asset ID for KeyCode '" .. keyCode.Value .. "' on platform '" .. platform .. "' (using table '" .. tableName .. "'). No icon will be displayed.")
+		warn("Missing icon asset ID for KeyCode '" .. keyCode.Name .. "' on platform '" .. platform .. "' (using table '" .. tableName .. "'). No icon will be displayed.")
 	end
 
 	return iconId
@@ -80,8 +80,8 @@ end
 -- Calculate scale factor for dynamic scaling
 function Utilities.GetScaleFactor(screenWidth: number): number
 
-	local t = math.clamp((screenWidth - Settings.MIN_SCREEN_WIDTH) / (Settings.MAX_SCREEN_WIDTH - Settings.MIN_SCREEN_WIDTH), 0, 1)
-	return 1 + t * (Settings.MAX_SCALE_FACTOR - 1)
+	local lerp = math.clamp((screenWidth - Settings.MIN_SCREEN_WIDTH) / (Settings.MAX_SCREEN_WIDTH - Settings.MIN_SCREEN_WIDTH), 0, 1)
+	return 1 + lerp * (Settings.MAX_SCALE_FACTOR - 1)
 
 end
 
@@ -103,18 +103,23 @@ function Utilities.GetCombinations(inputAction: InputAction, inputType: InputTyp
 				local keyCode = inputBinding.KeyCode
 				local primaryMod = inputBinding.PrimaryModifier
 				local secondaryMod = inputBinding.SecondaryModifier
-				assert(keyCode ~= Enum.KeyCode.Unknown, "InputBinding '" .. inputBinding.Name .. "' inside InputAction '" .. inputAction.Name .. "' has no assigned KeyCode.")
-				
-				table.insert(combinationList, {
-					keyCode = keyCode,
-					primaryMod = primaryMod,
-					secondaryMod = secondaryMod
-				})
+
+				if keyCode ~= Enum.KeyCode.Unknown then
+					table.insert(combinationList, {
+						keyCode = keyCode,
+						primaryMod = primaryMod,
+						secondaryMod = secondaryMod
+					})
+				elseif Settings.DEBUG then
+					warn("InputBinding '" .. inputBinding.Name .. "' inside InputAction '" .. inputAction.Name .. "' has no assigned KeyCode! It will not be displayed.")
+				end
 			end
 		end
 	end
-	
-	assert(#combinationList > 0, "InputAction '" .. inputAction.Name .. "' does not have any valid InputBindings for the inputType '" .. inputType .. "'!")
+
+	if #combinationList == 0 and Settings.DEBUG then
+		warn("InputAction '" .. inputAction.Name .. "' does not have any valid InputBindings for the inputType '" .. inputType .. "'! It will not be displayed.")
+	end
 
 	return combinationList
 
@@ -143,9 +148,9 @@ function Utilities.ApplyDynamicScaling(screenWidth: number, hintFrame: Frame)
 		warn("Screen width is " .. screenWidth .. " (< " .. Settings.MIN_SCREEN_WIDTH .. "). Skipping dynamic scaling.")
 		return
 	end
-	
+
 	local scale = Utilities.GetScaleFactor(screenWidth)
-	
+
 	local targetText = math.floor(Settings.BASE_FONT_SIZE * scale)
 	local targetIcon = math.floor(Settings.BASE_ICON_SIZE * scale)
 	targetIcon = Vector2.new(targetIcon, targetIcon)
