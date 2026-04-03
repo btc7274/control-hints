@@ -1,7 +1,7 @@
-local Settings = {}
 local ControlHints = script.Parent
 local IconSets = ControlHints.IconSets
 local DisplayStyles = ControlHints.DisplayStyles
+local Settings = {}
 
 
 -- Select a Control Hints icon set
