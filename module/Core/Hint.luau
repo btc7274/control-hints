@@ -59,46 +59,9 @@ function Hint.new(inputAction: InputAction, inputContext: InputContext, screenGu
 	local templateHint = container:FindFirstChild("TemplateHint")
 	assert(templateHint and templateHint:IsA("Frame"), "No Frame 'TemplateHint' found in Frame 'Container'!")
 
-	-- Get list of KeyCode combinations
-	local inputType = setupInfo.inputType
-	local combinationList = Utilities.GetCombinations(inputAction, inputType)
-
-	-- Get icon IDs for each KeyCode in a combination
-	local combinationIdList: {CombinationIds} = {}
-	for _, combination in combinationList do
-		table.insert(combinationIdList, {
-			keyCode = getIconIds(combination.keyCode),
-			primaryMod = getIconIds(combination.primaryMod),
-			secondaryMod = getIconIds(combination.secondaryMod)
-		} :: CombinationIds)
-	end
-
-	-- Get layout order for hint
-	local customOrder = inputAction:GetAttribute("CustomOrder")
-	local layoutOrder = typeof(customOrder) == "number" and customOrder :: number or math.huge
-
-	-- If no custom order, then sort manually
-	if layoutOrder == math.huge then
-		-- Get sort index by inputType
-		local sortIndex = (inputType == "Keyboard" and Sorting.keyboard_sort_index) or (inputType == "Gamepad" and Sorting.gamepad_sort_index) or Sorting.mobile_sort_index
-		if not sortIndex then
-			if Settings.DEBUG then
-				warn("No sort table found for inputType '" .. inputType .. "'. Add a table to the Sorting module for consistent hints display.")
-			end
-			sortIndex = {}
-		end
-
-		-- Find minimum layout order according to sort index
-		for _, combination in combinationList do
-			local index = sortIndex[combination.keyCode] or math.huge
-			layoutOrder = math.min(layoutOrder, index)
-		end
-	end
-
 	-- Create new hint from template
 	self.Frame = templateHint:Clone()
 	self.Frame.Name = inputAction.Name
-	self.Frame.LayoutOrder = layoutOrder
 
 	-- Setup label
 	local label = self.Frame:FindFirstChild("Label")
@@ -145,10 +108,17 @@ function Hint.new(inputAction: InputAction, inputContext: InputContext, screenGu
 	local function doDestroy()
 		self:Destroy()
 	end
+	local function doSort()
+		self:Sort()
+	end
 
 	self.Connections = {
 		inputContext.Changed:Connect(doUpdate),
+		inputContext:GetAttributeChangedSignal("Hidden"):Connect(doUpdate),
 		inputAction.Changed:Connect(doUpdate),
+		inputAction:GetAttributeChangedSignal("CustomName"):Connect(doUpdate),
+		inputAction:GetAttributeChangedSignal("CustomOrder"):Connect(doSort),
+		inputAction:GetAttributeChangedSignal("Hidden"):Connect(doUpdate),
 		inputAction.Pressed:Connect(doUpdate),
 		inputAction.Released:Connect(doUpdate),
 		inputAction.Destroying:Once(doDestroy),
@@ -168,10 +138,45 @@ function Hint.new(inputAction: InputAction, inputContext: InputContext, screenGu
 		screenGui.Destroying:Once(doDestroy)
 	}
 
-	-- Initial update
+	-- Initial update and sort
+	self:Sort()
 	self:Update()
 
 	return self
+
+end
+
+
+-- Update hint's LayoutOrder
+function metatable:Sort()
+
+	local inputAction = self.InputAction :: InputAction
+	local inputType = self.SetupInfo.inputType
+	local combinationList = Utilities.GetCombinations(inputAction, inputType)
+
+	-- Get layout order for hint
+	local customOrder = inputAction:GetAttribute("CustomOrder")
+	local layoutOrder = typeof(customOrder) == "number" and customOrder :: number or math.huge
+
+	-- If no custom order, then sort manually
+	if layoutOrder == math.huge then
+		-- Get sort index by inputType
+		local sortIndex = (inputType == "Keyboard" and Sorting.keyboard_sort_index) or (inputType == "Gamepad" and Sorting.gamepad_sort_index) or Sorting.mobile_sort_index
+		if not sortIndex then
+			if Settings.DEBUG then
+				warn("No sort table found for inputType '" .. inputType .. "'. Add a table to the Sorting module for consistent hints display.")
+			end
+			sortIndex = {}
+		end
+
+		-- Find minimum layout order according to sort index
+		for _, combination in combinationList do
+			local index = sortIndex[combination.keyCode] or math.huge
+			layoutOrder = math.min(layoutOrder, index)
+		end
+	end
+
+	self.Frame.LayoutOrder = layoutOrder
 
 end
 
@@ -198,12 +203,13 @@ function metatable:RebuildIcons()
 	end
 	table.clear(self.Content)
 
-	-- Get icon IDs for each KeyCode in a combination
+	-- Get KeyCode combinations
 	local combinationList = Utilities.GetCombinations(inputAction, inputType)
 
 	-- Hide hint if InputAction has no InputBindings
 	self.Hidden = #combinationList == 0
 
+	-- Get icon IDs for each KeyCode in a combination
 	local combinationIdList: {CombinationIds} = {}
 	for _, combination in combinationList do
 		table.insert(combinationIdList, {
@@ -337,6 +343,17 @@ function metatable:Update()
 	local inputAction = self.InputAction :: InputAction
 	local inputContext = self.InputContext :: InputContext
 
+	-- Get Hidden attributes (overrides .Enabled visibility)
+	local contextHidden = inputContext:GetAttribute("Hidden")
+	local actionHidden = inputAction:GetAttribute("Hidden")
+
+	-- Update hint's Hidden value
+	if contextHidden or actionHidden then
+		self.Hidden = true
+	else
+		self.Hidden = false
+	end
+
 	-- Update hint visibility
 	frame.Visible = inputContext.Enabled and inputAction.Enabled and not self.Hidden
 
@@ -348,7 +365,7 @@ function metatable:Update()
 	frame.Label.Text = displayName
 
 	-- Update icon images
-	for icon, iconIds in self.IconList do
+	for icon, iconIds in self.IconList :: {[ImageLabel]: IconIds} do
 		local isPressed = Settings.ENABLE_RESPONSIVE and inputAction.Type == Enum.InputActionType.Bool and inputAction:GetState() and true or false
 		icon.Image = isPressed and iconIds.pressedIconId or iconIds.iconId
 	end
