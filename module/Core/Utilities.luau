@@ -6,7 +6,7 @@ local CollectionService = game:GetService("CollectionService")
 local Settings = require("../Configuration/Settings")
 
 -- Types
-type InputType = "Keyboard" | "Gamepad" | "Mobile" 
+type InputType = "Keyboard" | "Gamepad" | "Mobile"
 
 type GamepadType = "xbox" | "ps"
 
@@ -28,6 +28,11 @@ local Utilities = {}
 -- specificPlatform: Optionally select a platform to get an icon from
 function Utilities.GetIconId(keyCode: Enum.KeyCode, specificPlatform: ("keyboard" | "mobile" | "xbox" | "ps")?, isPressed: boolean?): string
 
+	-- Early exit
+	if keyCode == Enum.KeyCode.Unknown then
+		return ""
+	end
+
 	local iconSet = Settings.ICON_SET
 	local useResponsive = isPressed == true and Settings.ENABLE_RESPONSIVE
 
@@ -45,18 +50,23 @@ function Utilities.GetIconId(keyCode: Enum.KeyCode, specificPlatform: ("keyboard
 		end
 	end
 
-	-- Get icon asset ID
+	-- Get icon asset ID in icon set
 	local suffix = useResponsive and "_pressed" or ""
 	local tableName = platform .. suffix
 	local iconTable = iconSet[tableName]
 
-	if useResponsive then
-		assert(iconTable and next(iconTable), "Settings.ENABLE_RESPONSIVE is true, but the icon set does not have any tables with the '_pressed' suffix for the platform '" .. platform .. "'!")
+	if useResponsive and not (iconTable and next(iconTable)) then
+		warn("Settings.ENABLE_RESPONSIVE is true, but the icon set does not have any tables with the '_pressed' suffix for the platform '" .. platform .. "'!")
+
+		-- Fallback to normal icon
+		suffix = ""
+		tableName = platform .. suffix
+		iconTable = iconSet[tableName]
 	end
 
 	local iconId = iconTable[keyCode] or ""
-	if iconId == "" and keyCode ~= Enum.KeyCode.Unknown then
-		warn("Missing icon asset ID for KeyCode '" .. keyCode.Name .. "' on platform '" .. platform .. "' (using table '" .. tableName .. "'). No icon will be displayed.")
+	if iconId == "" then
+		warn("Missing icon asset ID for KeyCode '" .. keyCode.Name .. "' on platform '" .. platform .. "' (using table '" .. tableName .. "'). Nothing will be displayed.")
 	end
 
 	return iconId
@@ -79,10 +89,8 @@ end
 
 -- Calculate scale factor for dynamic scaling
 function Utilities.GetScaleFactor(screenWidth: number): number
-
 	local lerp = math.clamp((screenWidth - Settings.MIN_SCREEN_WIDTH) / (Settings.MAX_SCREEN_WIDTH - Settings.MIN_SCREEN_WIDTH), 0, 1)
 	return 1 + lerp * (Settings.MAX_SCALE_FACTOR - 1)
-
 end
 
 
@@ -130,9 +138,10 @@ end
 function Utilities.GetInputType(): InputType
 
 	local inputType = "Keyboard"
-	if UserInputService.PreferredInput == Enum.PreferredInput.Gamepad then 
+	local preferredInput = UserInputService.PreferredInput
+	if preferredInput == Enum.PreferredInput.Gamepad then
 		inputType = "Gamepad"
-	elseif UserInputService.PreferredInput == Enum.PreferredInput.Touch then
+	elseif preferredInput == Enum.PreferredInput.Touch then
 		inputType = "Mobile"
 	end
 
@@ -144,7 +153,7 @@ end
 -- Applies current scaling to all active hints (if dynamic scaling is enabled)
 function Utilities.ApplyDynamicScaling(screenWidth: number, hintFrame: Frame)
 
-	if screenWidth < Settings.MIN_SCREEN_WIDTH then 
+	if screenWidth < Settings.MIN_SCREEN_WIDTH and Settings.DEBUG then
 		warn("Screen width is " .. screenWidth .. " (< " .. Settings.MIN_SCREEN_WIDTH .. "). Skipping dynamic scaling.")
 		return
 	end
