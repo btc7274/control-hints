@@ -1,4 +1,5 @@
 --!strict
+local UserInputService = game:GetService("UserInputService")
 
 -- Classes
 local Hint = require(script.Core.Hint)
@@ -64,17 +65,12 @@ function ControlHints.CreateUI(iasSetup: Instance, optionalParent: Instance?): S
 	}
 
 	-- Track InputActions that have hints (avoid duplication)
-	local assignedHints: {[InputAction]: boolean} = {}
+	local assignedHints: {[InputAction]: any} = {}
 
 	-- Create a unique Hint object
 	local function createHint(inputAction: InputAction, inputContext: InputContext)
-
-		-- Pass if not assigned to hint
 		if assignedHints[inputAction] then return end
-		assignedHints[inputAction] = true
-
-		Hint.new(inputAction, inputContext, controlHintsGui, setupInfo)
-
+		assignedHints[inputAction] = Hint.new(inputAction, inputContext, controlHintsGui, setupInfo)
 	end
 
 	-- Create a hint when a descendant is added to iasSetup
@@ -103,13 +99,36 @@ function ControlHints.CreateUI(iasSetup: Instance, optionalParent: Instance?): S
 	end))
 
 	-- Populate UI with hints
-	for _, inputContext in iasSetup:GetChildren() do
-		if not inputContext:IsA("InputContext") then continue end
-		for _, inputAction in inputContext:GetChildren() do
-			if not inputAction:IsA("InputAction") then continue end
-			task.defer(createHint, inputAction, inputContext)
+	local function populateUI()
+		for _, inputContext in iasSetup:GetChildren() do
+			if not inputContext:IsA("InputContext") then continue end
+			for _, inputAction in inputContext:GetChildren() do
+				if not inputAction:IsA("InputAction") then continue end
+				task.defer(createHint, inputAction, inputContext)
+			end
 		end
 	end
+
+	-- Initial update
+	populateUI()
+
+	-- Re-populate when PreferredInput changes
+	table.insert(connections, UserInputService:GetPropertyChangedSignal("PreferredInput"):Connect(function()
+
+		-- Clear existing hints
+		for key, hint in assignedHints do
+			hint:Destroy()
+			assignedHints[key] = nil
+		end
+		table.clear(assignedHints)
+
+		-- Update setupInfo
+		setupInfo.inputType = Utilities.GetInputType()
+
+		-- Re-populate UI with new hints
+		populateUI()
+
+	end))
 
 	-- Clean up when ScreenGui or iasSetup is destroying
 	table.insert(connections, controlHintsGui.Destroying:Once(clearConnections))
