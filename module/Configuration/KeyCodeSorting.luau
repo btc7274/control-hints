@@ -11,6 +11,9 @@
 local Sorting = {}
 
 Sorting.keyboard_order = {
+	Enum.KeyCode.MouseDelta,
+	Enum.KeyCode.MousePosition,
+	Enum.KeyCode.MouseWheel,
 	Enum.KeyCode.MouseLeftButton,
 	Enum.KeyCode.MouseRightButton,
 	Enum.KeyCode.MouseMiddleButton,
@@ -89,6 +92,16 @@ Sorting.gamepad_order = {
 	Enum.KeyCode.ButtonR2,
 	Enum.KeyCode.ButtonL3,
 	Enum.KeyCode.ButtonR3,
+	Enum.KeyCode.Thumbstick1,
+	Enum.KeyCode.Thumbstick1Up,
+	Enum.KeyCode.Thumbstick1Down,
+	Enum.KeyCode.Thumbstick1Left,
+	Enum.KeyCode.Thumbstick1Right,
+	Enum.KeyCode.Thumbstick2,
+	Enum.KeyCode.Thumbstick2Up,
+	Enum.KeyCode.Thumbstick2Down,
+	Enum.KeyCode.Thumbstick2Left,
+	Enum.KeyCode.Thumbstick2Right,
 	Enum.KeyCode.DPadUp,
 	Enum.KeyCode.DPadDown,
 	Enum.KeyCode.DPadLeft,
