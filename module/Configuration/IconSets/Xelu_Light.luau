@@ -68,6 +68,9 @@ iconSet.keyboard = {
 	[Enum.KeyCode.MouseLeftButton] = "rbxassetid://86710830092772",
 	[Enum.KeyCode.MouseRightButton] = "rbxassetid://118683001262054",
 	[Enum.KeyCode.MouseMiddleButton] = "rbxassetid://114251641147797",
+	[Enum.KeyCode.MouseDelta] = "rbxassetid://78597431438520",
+	[Enum.KeyCode.MousePosition] = "rbxassetid://78597431438520",
+	[Enum.KeyCode.MouseWheel] = "rbxassetid://114251641147797",
 	-- Add more keyboard keys as needed.
 }
 
@@ -89,6 +92,8 @@ iconSet.xbox = {
 	[Enum.KeyCode.DPadDown] = "rbxassetid://104669231341837",
 	[Enum.KeyCode.DPadLeft] = "rbxassetid://70817433334175",
 	[Enum.KeyCode.DPadRight] = "rbxassetid://100359799830093",
+	[Enum.KeyCode.Thumbstick1] = "rbxassetid://110802589523435",
+	[Enum.KeyCode.Thumbstick2] = "rbxassetid://114005394722262",
 	-- Add more Xbox buttons as needed.
 }
 
@@ -110,6 +115,9 @@ iconSet.ps = {
 	[Enum.KeyCode.DPadDown] = "rbxassetid://87887123801845",
 	[Enum.KeyCode.DPadLeft] = "rbxassetid://79929158253781",
 	[Enum.KeyCode.DPadRight] = "rbxassetid://70780762403440",
+	[Enum.KeyCode.Thumbstick1] = "rbxassetid://121661463374661",
+	[Enum.KeyCode.Thumbstick2] = "rbxassetid://82115243873064",
+	-- Add more PlayStation buttons as needed.
 }
 
 -- Mobile touch icon
