@@ -10,10 +10,18 @@ type InputType = "Keyboard" | "Gamepad" | "Mobile"
 
 type GamepadType = "xbox" | "ps"
 
-type KeyCodeCombination = {
+export type HintType = "Bool" | "Directional"
+
+type BindingKeyCodes = {
 	keyCode: Enum.KeyCode,
-	primaryMod: Enum.KeyCode,
-	secondaryMod: Enum.KeyCode
+	primaryModifier: Enum.KeyCode,
+	secondaryModifier: Enum.KeyCode,
+	up: Enum.KeyCode?,
+	down: Enum.KeyCode?,
+	left: Enum.KeyCode?,
+	right: Enum.KeyCode?,
+	forward: Enum.KeyCode?,
+	backward: Enum.KeyCode?
 }
 
 export type SetupInfo = {
@@ -81,7 +89,26 @@ function Utilities.GetGamepadType(): GamepadType
 	if buttonString == "ButtonCross" then
 		return "ps"
 	else
-		return "xbox"  -- Default.
+		return "xbox"  -- Default
+	end
+
+end
+
+
+-- Determines hint type using its InputAction
+function Utilities.GetHintType(inputAction: InputAction): HintType
+
+	local actionType = inputAction.Type
+	if actionType == Enum.InputActionType.Bool then
+		return "Bool"
+	elseif actionType == Enum.InputActionType.Direction1D
+		or actionType == Enum.InputActionType.Direction2D
+		or actionType == Enum.InputActionType.Direction3D
+		or actionType == Enum.InputActionType.ViewportPosition
+	then
+		return "Directional"
+	else
+		return "Bool" -- Fallback
 	end
 
 end
@@ -94,42 +121,40 @@ function Utilities.GetScaleFactor(screenWidth: number): number
 end
 
 
--- Returns list of KeyCode combinations for InputBindings that match the inputType
-function Utilities.GetCombinations(inputAction: InputAction, inputType: InputType): {KeyCodeCombination}
+-- Returns list of all KeyCodes for InputBindings that match the inputType
+function Utilities.GetBindingKeyCodes(inputAction: InputAction, inputType: InputType): {BindingKeyCodes}
 
-	-- Get all KeyCode combinations for the InputAction
-	local combinationList: {KeyCodeCombination} = {}
+	-- Get all BindingInfos for the InputAction
+	local bindingKeyCodesList: {BindingKeyCodes} = {}
 	for _, inputBinding in inputAction:GetChildren() do
 		if inputBinding:IsA("InputBinding") and inputBinding.Name:match("^" .. inputType) then
 			if inputType == "Mobile" then
-				table.insert(combinationList, {
+				table.insert(bindingKeyCodesList, {
 					keyCode = Enum.KeyCode.Touch,
-					primaryMod = Enum.KeyCode.Unknown,
-					secondaryMod = Enum.KeyCode.Unknown
-				})
+					primaryModifier = Enum.KeyCode.Unknown,
+					secondaryModifier = Enum.KeyCode.Unknown,
+				} :: BindingKeyCodes)
 			else
-				local keyCode = inputBinding.KeyCode
-				local primaryMod = inputBinding.PrimaryModifier
-				local secondaryMod = inputBinding.SecondaryModifier
-
-				if keyCode ~= Enum.KeyCode.Unknown then
-					table.insert(combinationList, {
-						keyCode = keyCode,
-						primaryMod = primaryMod,
-						secondaryMod = secondaryMod
-					})
-				elseif Settings.DEBUG then
-					warn("InputBinding '" .. inputBinding.Name .. "' inside InputAction '" .. inputAction.Name .. "' has no assigned KeyCode! It will not be displayed.")
-				end
+				table.insert(bindingKeyCodesList, {
+					keyCode = inputBinding.KeyCode,
+					primaryModifier = inputBinding.PrimaryModifier,
+					secondaryModifier = inputBinding.SecondaryModifier,
+					up = inputBinding.Up,
+					down = inputBinding.Down,
+					left = inputBinding.Left,
+					right = inputBinding.Right,
+					forward = inputBinding.Forward,
+					backward = inputBinding.Backward
+				} :: BindingKeyCodes)
 			end
 		end
 	end
 
-	if #combinationList == 0 and Settings.DEBUG then
+	if #bindingKeyCodesList == 0 and Settings.DEBUG then
 		warn("InputAction '" .. inputAction.Name .. "' does not have any valid InputBindings for the inputType '" .. inputType .. "'! It will not be displayed.")
 	end
 
-	return combinationList
+	return bindingKeyCodesList
 
 end
 
