@@ -29,7 +29,7 @@
     
     
       
-        <title>Display Styles - Control Hints Documentation</title>
+        <title>Display Styles - control-hints Documentation</title>
       
     
     
@@ -96,7 +96,7 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="Control Hints Documentation" class="md-header__button md-logo" aria-label="Control Hints Documentation" data-md-component="logo">
+    <a href="../.." title="control-hints Documentation" class="md-header__button md-logo" aria-label="control-hints Documentation" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -110,7 +110,7 @@
       <div class="md-header__ellipsis">
         <div class="md-header__topic">
           <span class="md-ellipsis">
-            Control Hints Documentation
+            control-hints Documentation
           </span>
         </div>
         <div class="md-header__topic" data-md-component="header-topic">
@@ -282,13 +282,13 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="Control Hints Documentation" class="md-nav__button md-logo" aria-label="Control Hints Documentation" data-md-component="logo">
+    <a href="../.." title="control-hints Documentation" class="md-nav__button md-logo" aria-label="control-hints Documentation" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
 
     </a>
-    Control Hints Documentation
+    control-hints Documentation
   </label>
   
     <div class="md-nav__source">
@@ -863,12 +863,22 @@
 <p>Control Hints makes it easy to create display styles and modify existing ones.</p>
 <h3 id="structure">Structure</h3>
 <p>It's important that certain instances of a name and class are present within the display style in order for Control Hints to function properly.</p>
-<p><img alt="Example Display Style Structure" src="../../images/example-display-style-structure.png" width="30%" /></p>
+<p><img alt="Example Display Style Structure" src="../../images/display-style-structure-v2.1.png" width="30%" /></p>
 <p>A display style must contain:</p>
 <ul>
 <li><code>Container</code> Frame to contain all UI elements.<ul>
-<li><code>TemplateHint</code> Frame, which is what Control Hints clones to generate hints.<ul>
-<li><code>Icon</code> ImageLabel to display an icon of a KeyCode.</li>
+<li><code>HintTemplate</code> Frame, which is what Control Hints clones to generate hints.<ul>
+<li><code>IconGroup</code> Frame to contain composite icons.<ul>
+<li><code>UpIcon</code> ImageLabel to display <code>InputBinding.Up</code>.</li>
+<li><code>DownIcon</code> ImageLabel to display <code>InputBinding.Down</code>.</li>
+<li><code>LeftIcon</code> ImageLabel to display <code>InputBinding.Left</code>.</li>
+<li><code>RightIcon</code> ImageLabel to display <code>InputBinding.Right</code>.</li>
+<li><code>ForwardIcon</code> ImageLabel to display <code>InputBinding.Forward</code>.</li>
+<li><code>BackwardIcon</code> ImageLabel to display <code>InputBinding.Backward</code>.</li>
+<li><em>Note: The icons (<code>UpIcon</code>, <code>DownIcon</code>, <code>LeftIcon</code>, etc.) can be nested at any depth inside <code>IconGroup</code>.</em></li>
+</ul>
+</li>
+<li><code>Icon</code> ImageLabel to display a KeyCode.</li>
 <li><code>Label</code> TextLabel to display the name of the InputAction.</li>
 <li>Optionally, <code>Separator</code> GuiObject to convey a separation between multiple KeyCodes.<ul>
 <li>Example: "X <em>or</em> Y to jump"</li>
@@ -893,7 +903,7 @@
 <div class="highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1">-- Select a Control Hints display style</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nv">Settings</span><span class="p">.</span><span class="nv">DISPLAY_STYLE</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">DisplayStyles</span><span class="p">.</span><span class="nv">Classic</span>
 </span></code></pre></div>
-<p>Now, when you test your game, Control Hints will use your display style. If there are any issues with it, Control Hints should error/warn with details on what needs fixing. If you encounter errors, ensure that the <a href="#structure">structure</a> is sound before reporting to the <a href="https://devforum.roblox.com/t/control-hints-show-your-ias-bindings-pc-xbox-playstation-mobile/3978604" target="_blank" rel="noopener">DevForum thread</a></p>
+<p>Now, when you test your game, Control Hints will use your display style. If there are any issues with it, Control Hints should error/warn with details on what needs fixing. If you encounter errors, ensure that the <a href="#structure">structure</a> is sound before reporting to the <a href="https://devforum.roblox.com/t/control-hints-show-your-ias-bindings-pc-xbox-playstation-mobile/3978604" target="_blank" rel="noopener">DevForum thread</a>.</p>
 
 
 
