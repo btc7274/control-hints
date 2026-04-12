@@ -4,7 +4,7 @@ Creating and managing UI for showing game controls has always been one of those 
 
 ### ⭐️ Key Features
 - **IAS Compatibility**: Works with the standard IAS setup (Context -> Action -> Binding)
-- **Game-Agnostic**: If your game has IAS, you can add Control Hints to it
+- **Up-to-Date:** Supports modifier KeyCodes and all InputAction types
 - **All Platforms**: Keyboard/mouse, Xbox, PlayStation, and mobile devices
 - **Customizable**: Choose from premade display styles and icon sets, or make your own
 - **Safety First**: All code is written with strict typechecking
