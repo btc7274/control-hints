@@ -71,7 +71,10 @@ iconSet.keyboard = {
 	[Enum.KeyCode.MouseLeftButton] = "rbxassetid://134453542370649",
 	[Enum.KeyCode.MouseRightButton] = "rbxassetid://91169200639336",
 	[Enum.KeyCode.MouseMiddleButton] = "rbxassetid://104506943002977",
-	-- Add more keyboard keys as needed.
+	[Enum.KeyCode.MouseDelta] = "rbxassetid://98332276730837",
+	[Enum.KeyCode.MousePosition] = "rbxassetid://98332276730837",
+	[Enum.KeyCode.MouseWheel] = "rbxassetid://96276376151138",
+	-- Add more keys as needed.
 }
 
 -- Keyboard / Mouse pressed – used when responsive mode is enabled
@@ -140,6 +143,10 @@ iconSet.keyboard_pressed = {
 	[Enum.KeyCode.MouseLeftButton] = "rbxassetid://139241682501673",
 	[Enum.KeyCode.MouseRightButton] = "rbxassetid://106003416234413",
 	[Enum.KeyCode.MouseMiddleButton] = "rbxassetid://95974057320489",
+	[Enum.KeyCode.MouseDelta] = "rbxassetid://98332276730837",	-- No pressed variant.
+	[Enum.KeyCode.MousePosition] = "rbxassetid://98332276730837",	-- No pressed variant.
+	[Enum.KeyCode.MouseWheel] = "rbxassetid://135509714173919",
+	-- Add more keys as needed.
 }
 
 -- Xbox controller icons
@@ -160,7 +167,17 @@ iconSet.xbox = {
 	[Enum.KeyCode.DPadDown] = "rbxassetid://104669231341837",
 	[Enum.KeyCode.DPadLeft] = "rbxassetid://70817433334175",
 	[Enum.KeyCode.DPadRight] = "rbxassetid://100359799830093",
-	-- Add more Xbox buttons as needed.
+	[Enum.KeyCode.Thumbstick1] = "rbxassetid://110103426315741",
+	[Enum.KeyCode.Thumbstick1Up] = "rbxassetid://137259367533422",
+	[Enum.KeyCode.Thumbstick1Down] = "rbxassetid://97999517322948",
+	[Enum.KeyCode.Thumbstick1Left] = "rbxassetid://130253595148467",
+	[Enum.KeyCode.Thumbstick1Right] = "rbxassetid://89985601172212",
+	[Enum.KeyCode.Thumbstick2] = "rbxassetid://106043567095720",
+	[Enum.KeyCode.Thumbstick2Up] = "rbxassetid://114815186160221",
+	[Enum.KeyCode.Thumbstick2Down] = "rbxassetid://134293476081800",
+	[Enum.KeyCode.Thumbstick2Left] = "rbxassetid://103079877551827",
+	[Enum.KeyCode.Thumbstick2Right] = "rbxassetid://136455099792696",
+	-- Add more keys as needed.
 }
 
 -- Xbox pressed icons – used when responsive mode is enabled
@@ -181,6 +198,17 @@ iconSet.xbox_pressed = {
 	[Enum.KeyCode.DPadDown] = "rbxassetid://102085473243154",
 	[Enum.KeyCode.DPadLeft] = "rbxassetid://86752094455218",
 	[Enum.KeyCode.DPadRight] = "rbxassetid://84381265753854",
+	[Enum.KeyCode.Thumbstick1] = "rbxassetid://110103426315741",	-- No pressed variant.
+	[Enum.KeyCode.Thumbstick1Up] = "rbxassetid://108330479173299",
+	[Enum.KeyCode.Thumbstick1Down] = "rbxassetid://103626829223177",
+	[Enum.KeyCode.Thumbstick1Left] = "rbxassetid://83509727441387",
+	[Enum.KeyCode.Thumbstick1Right] = "rbxassetid://93625508727790",
+	[Enum.KeyCode.Thumbstick2] = "rbxassetid://106043567095720",	-- No pressed variant.
+	[Enum.KeyCode.Thumbstick2Up] = "rbxassetid://72534634507325",
+	[Enum.KeyCode.Thumbstick2Down] = "rbxassetid://124638552142148",
+	[Enum.KeyCode.Thumbstick2Left] = "rbxassetid://89100943300408",
+	[Enum.KeyCode.Thumbstick2Right] = "rbxassetid://92267867378798",
+	-- Add more keys as needed.
 }
 
 -- PlayStation controller icons
@@ -201,6 +229,17 @@ iconSet.ps = {
 	[Enum.KeyCode.DPadDown] = "rbxassetid://81595071577952",
 	[Enum.KeyCode.DPadLeft] = "rbxassetid://110342452833524",
 	[Enum.KeyCode.DPadRight] = "rbxassetid://102465619152428",
+	[Enum.KeyCode.Thumbstick1] = "rbxassetid://110103426315741",
+	[Enum.KeyCode.Thumbstick1Up] = "rbxassetid://137259367533422",
+	[Enum.KeyCode.Thumbstick1Down] = "rbxassetid://97999517322948",
+	[Enum.KeyCode.Thumbstick1Left] = "rbxassetid://130253595148467",
+	[Enum.KeyCode.Thumbstick1Right] = "rbxassetid://89985601172212",
+	[Enum.KeyCode.Thumbstick2] = "rbxassetid://106043567095720",
+	[Enum.KeyCode.Thumbstick2Up] = "rbxassetid://114815186160221",
+	[Enum.KeyCode.Thumbstick2Down] = "rbxassetid://134293476081800",
+	[Enum.KeyCode.Thumbstick2Left] = "rbxassetid://103079877551827",
+	[Enum.KeyCode.Thumbstick2Right] = "rbxassetid://136455099792696",
+	-- Add more keys as needed.
 }
 
 -- PlayStation pressed icons – used when responsive mode is enabled
@@ -221,16 +260,29 @@ iconSet.ps_pressed = {
 	[Enum.KeyCode.DPadDown] = "rbxassetid://128962953096251",
 	[Enum.KeyCode.DPadLeft] = "rbxassetid://135949602484357",
 	[Enum.KeyCode.DPadRight] = "rbxassetid://133739786136359",
+	[Enum.KeyCode.Thumbstick1] = "rbxassetid://110103426315741",	-- No pressed variant.
+	[Enum.KeyCode.Thumbstick1Up] = "rbxassetid://108330479173299",
+	[Enum.KeyCode.Thumbstick1Down] = "rbxassetid://103626829223177",
+	[Enum.KeyCode.Thumbstick1Left] = "rbxassetid://83509727441387",
+	[Enum.KeyCode.Thumbstick1Right] = "rbxassetid://93625508727790",
+	[Enum.KeyCode.Thumbstick2] = "rbxassetid://106043567095720",	-- No pressed variant.
+	[Enum.KeyCode.Thumbstick2Up] = "rbxassetid://72534634507325",
+	[Enum.KeyCode.Thumbstick2Down] = "rbxassetid://124638552142148",
+	[Enum.KeyCode.Thumbstick2Left] = "rbxassetid://89100943300408",
+	[Enum.KeyCode.Thumbstick2Right] = "rbxassetid://92267867378798",
+	-- Add more keys as needed.
 }
 
 -- Mobile touch icon
 iconSet.mobile = {
 	[Enum.KeyCode.Touch] = "rbxassetid://108731585520488",
+	-- Add more keys as needed.
 }
 
 -- Mobile touch pressed icon – used when responsive mode is enabled
 iconSet.mobile_pressed = {
 	[Enum.KeyCode.Touch] = "rbxassetid://122395190462889",
+	-- Add more keys as needed.
 }
 
 return iconSet
