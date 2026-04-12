@@ -46,12 +46,14 @@ function ControlHints.CreateUI(iasSetup: Instance, optionalParent: Instance?): S
 	-- Create new ScreenGui from display style
 	local controlHintsGui = displayStyle:Clone()
 
-	-- Error handling, hide template hint
-	local container = controlHintsGui.Container
-	assert(container, "Frame 'Container' not found in display style '" .. displayStyle.Name .. "'!")
-	local templateHint = container.TemplateHint
-	assert(templateHint, "Frame 'TemplateHint' not found in Frame 'Container'!")
-	templateHint.Visible = false
+	-- Get container
+	local container = controlHintsGui:FindFirstChild("Container")
+	assert(container and container:IsA("Frame"), "Frame 'Container' not found in display style '" .. displayStyle.Name .. "'!")
+
+	-- Hide template hint
+	local hintTemplate = container:FindFirstChild("HintTemplate")
+	assert(hintTemplate and hintTemplate:IsA("Frame"), "Frame 'HintTemplate' not found in Frame 'Container'!")
+	hintTemplate.Visible = false
 
 	-- Set parent (if given)
 	if optionalParent then
