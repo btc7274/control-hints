@@ -17,10 +17,16 @@ type IconIds = {
 	pressedIconId: string
 }
 
-type CombinationIds = {
+type BindingIconIds = {
 	keyCode: IconIds,
-	primaryMod: IconIds,
-	secondaryMod: IconIds
+	primaryModifier: IconIds,
+	secondaryModifier: IconIds,
+	up: IconIds?,
+	down: IconIds?,
+	left: IconIds?,
+	right: IconIds?,
+	forward: IconIds?,
+	backward: IconIds?
 }
 
 
@@ -53,14 +59,19 @@ function Hint.new(inputAction: InputAction, inputContext: InputContext, screenGu
 	self.Content = {}
 	self.BindingConnections = {}
 
-	-- Get template and container
+	-- Get container Frame
 	local container = screenGui:FindFirstChild("Container")
 	assert(container and container:IsA("Frame"), "No Frame 'Container' found in ScreenGui '" .. screenGui.Name .. "'!")
-	local templateHint = container:FindFirstChild("TemplateHint")
-	assert(templateHint and templateHint:IsA("Frame"), "No Frame 'TemplateHint' found in Frame 'Container'!")
+
+	-- Get hint type
+	self.HintType = Utilities.GetHintType(inputAction)
+
+	-- Get hint template Frame
+	local hintTemplate = container:FindFirstChild("HintTemplate")
+	assert(hintTemplate and hintTemplate:IsA("Frame"), "No Frame 'HintTemplate' found in Frame 'Container'!")
 
 	-- Create new hint from template
-	self.Frame = templateHint:Clone()
+	self.Frame = hintTemplate:Clone()
 	self.Frame.Name = inputAction.Name
 
 	-- Setup label
@@ -72,20 +83,26 @@ function Hint.new(inputAction: InputAction, inputContext: InputContext, screenGu
 	local displayName = typeof(customName) == "string" and customName :: string or inputAction.Name
 	label.Text = displayName
 
-	-- Get template icon, separator (optional), and union (optional)
+	-- Get templates depending on hint type
+	self.Templates = {
+		Separator = self.Frame:FindFirstChild("Separator"),
+		Union = self.Frame:FindFirstChild("Union")
+	} :: {[string]: Instance}
+
+	-- Add icon template
 	local iconTemplate = self.Frame:FindFirstChild("Icon")
 	assert(iconTemplate and iconTemplate:IsA("ImageLabel"), "ImageLabel 'Icon' not found in Frame 'TemplateHint'!")
-	local separatorTemplate = self.Frame:FindFirstChild("Separator")
-	local unionTemplate = self.Frame:FindFirstChild("Union")
+	self.Templates.Icon = iconTemplate
 
-	self.IconTemplate = iconTemplate
-	self.SeparatorTemplate = separatorTemplate
-	self.UnionTemplate = unionTemplate
+	-- Add icon group template
+	local iconGroup = self.Frame:FindFirstChild("IconGroup")
+	assert(iconGroup and iconGroup:IsA("Frame"), "Frame 'IconGroup' not found in Frame 'TemplateHint'!")
+	self.Templates.IconGroup = iconGroup
 
 	-- Parent templates to nil
-	iconTemplate.Parent = nil
-	if separatorTemplate then separatorTemplate.Parent = nil end
-	if unionTemplate then unionTemplate.Parent = nil end
+	for _, template in self.Templates do
+		template.Parent = nil
+	end
 
 	-- Initial build for icons
 	self:RebuildIcons()
@@ -116,11 +133,15 @@ function Hint.new(inputAction: InputAction, inputContext: InputContext, screenGu
 		inputContext.Changed:Connect(doUpdate),
 		inputContext:GetAttributeChangedSignal("Hidden"):Connect(doUpdate),
 		inputAction.Changed:Connect(doUpdate),
+		inputAction:GetPropertyChangedSignal("Type"):Connect(function()
+			self.HintType = Utilities.GetHintType(inputAction)
+			self:RebuildIcons()
+			self:Update()
+		end),
 		inputAction:GetAttributeChangedSignal("CustomName"):Connect(doUpdate),
 		inputAction:GetAttributeChangedSignal("CustomOrder"):Connect(doSort),
 		inputAction:GetAttributeChangedSignal("Hidden"):Connect(doUpdate),
-		inputAction.Pressed:Connect(doUpdate),
-		inputAction.Released:Connect(doUpdate),
+		inputAction.StateChanged:Connect(doUpdate),
 		inputAction.Destroying:Once(doDestroy),
 		inputAction.ChildAdded:Connect(function(child)
 			if child:IsA("InputBinding") then
@@ -152,7 +173,7 @@ function metatable:Sort()
 
 	local inputAction = self.InputAction :: InputAction
 	local inputType = self.SetupInfo.inputType
-	local combinationList = Utilities.GetCombinations(inputAction, inputType)
+	local bindingKeyCodesList = Utilities.GetBindingKeyCodes(inputAction, inputType)
 
 	-- Get layout order for hint
 	local customOrder = inputAction:GetAttribute("CustomOrder")
@@ -170,8 +191,8 @@ function metatable:Sort()
 		end
 
 		-- Find minimum layout order according to sort index
-		for _, combination in combinationList do
-			local index = sortIndex[combination.keyCode] or math.huge
+		for _, bindingKeyCodes in bindingKeyCodesList do
+			local index = sortIndex[bindingKeyCodes.keyCode] or math.huge
 			layoutOrder = math.min(layoutOrder, index)
 		end
 	end
@@ -186,9 +207,7 @@ function metatable:RebuildIcons()
 
 	-- Cache key values
 	local inputAction = self.InputAction :: InputAction
-	local iconTemplate = self.IconTemplate :: ImageLabel
-	local separatorTemplate = self.SeparatorTemplate :: GuiObject
-	local unionTemplate = self.UnionTemplate :: GuiObject
+	local hintType = self.HintType
 	local inputType = self.SetupInfo.inputType
 
 	-- Disconnect all binding connections
@@ -203,26 +222,40 @@ function metatable:RebuildIcons()
 	end
 	table.clear(self.Content)
 
+	-- Get templates
+	local iconTemplate = self.Templates.Icon :: ImageLabel?
+	assert(iconTemplate and iconTemplate:IsA("ImageLabel"), "No template 'Icon' found.")
+	local iconGroupTemplate = self.Templates.IconGroup :: Frame?
+	assert(iconGroupTemplate and iconGroupTemplate:IsA("Frame"), "No template 'IconGroup' found.")
+	local separatorTemplate = self.Templates.Separator :: GuiObject?
+	local unionTemplate = self.Templates.Union :: GuiObject?
+
 	-- Get KeyCode combinations
-	local combinationList = Utilities.GetCombinations(inputAction, inputType)
+	local bindingKeyCodesList = Utilities.GetBindingKeyCodes(inputAction, inputType)
 
 	-- Hide hint if InputAction has no InputBindings
-	self.Hidden = #combinationList == 0
+	self.Hidden = #bindingKeyCodesList == 0
 
-	-- Get icon IDs for each KeyCode in a combination
-	local combinationIdList: {CombinationIds} = {}
-	for _, combination in combinationList do
-		table.insert(combinationIdList, {
-			keyCode = getIconIds(combination.keyCode),
-			primaryMod = getIconIds(combination.primaryMod),
-			secondaryMod = getIconIds(combination.secondaryMod)
-		} :: CombinationIds)
+	-- Get icon IDs for all of an InputBinding's KeyCodes
+	local bindingIconIdsList: {BindingIconIds} = {}
+	for _, bindingKeyCodes in bindingKeyCodesList do
+		local bindingIconIds: {[string]: IconIds} = {}
+		for property, keyCode in bindingKeyCodes :: {[string]: Enum.KeyCode?} do
+			if keyCode and keyCode ~= Enum.KeyCode.Unknown then
+				local iconIds = getIconIds(keyCode)
+				if iconIds then
+					bindingIconIds[property] = iconIds
+				end
+			end
+		end
+		table.insert(bindingIconIdsList, bindingIconIds :: BindingIconIds)
 	end
 
 	local iconList: {[ImageLabel]: IconIds} = {}
+	local iconGroupIconsList: {[Frame]: {[ImageLabel]: IconIds}} = {}
 	local currentOrder = iconTemplate.LayoutOrder
 
-	-- Create an icon
+	-- Create a singular icon
 	local function createIcon(iconIds: IconIds)
 
 		local icon = iconTemplate:Clone()
@@ -233,6 +266,43 @@ function metatable:RebuildIcons()
 
 		iconList[icon] = iconIds
 		table.insert(self.Content, icon)
+
+		currentOrder += Settings.INCREMENT
+
+	end
+
+	-- Create an icon group (for directional InputActions)
+	local function createIconGroup(bindingIconIds: BindingIconIds)
+
+		local iconGroup = iconGroupTemplate:Clone()
+
+		-- Set properties
+		iconGroup.LayoutOrder = currentOrder
+		iconGroup.Parent = self.Frame
+
+		-- Create list of all directional icons in the group
+		local directionalIconList: {[string]: ImageLabel} = {
+			up = iconGroup:FindFirstChild("UpIcon", true) :: ImageLabel,
+			down = iconGroup:FindFirstChild("DownIcon", true) :: ImageLabel,
+			left = iconGroup:FindFirstChild("LeftIcon", true) :: ImageLabel,
+			right = iconGroup:FindFirstChild("RightIcon", true) :: ImageLabel,
+			forward = iconGroup:FindFirstChild("ForwardIcon", true) :: ImageLabel,
+			backward = iconGroup:FindFirstChild("BackwardIcon", true) :: ImageLabel
+		}
+
+		-- Setup each directional icon
+		local iconList2: {[ImageLabel]: IconIds} = {}
+		for property, icon in directionalIconList do
+			local iconIds = bindingIconIds[property] :: IconIds?
+			if iconIds then
+				iconList2[icon] = iconIds
+			else
+				icon.Visible = false
+			end
+		end
+
+		iconGroupIconsList[iconGroup] = iconList2
+		table.insert(self.Content, iconGroup)
 
 		currentOrder += Settings.INCREMENT
 
@@ -278,33 +348,52 @@ function metatable:RebuildIcons()
 
 	-- Construct icons with separators/unions as appropriate
 	local isFirst = true
-	for _, combinationIds in combinationIdList do
+	for _, bindingIconIds in bindingIconIdsList do
 		if not isFirst then
 			createSeparator()
 		else
 			isFirst = false
 		end
-		if combinationIds.secondaryMod then
-			createIcon(combinationIds.secondaryMod)
+		if bindingIconIds.secondaryModifier then
+			createIcon(bindingIconIds.secondaryModifier)
 			createUnion()
 		end
-		if combinationIds.primaryMod then
-			createIcon(combinationIds.primaryMod)
+		if bindingIconIds.primaryModifier then
+			createIcon(bindingIconIds.primaryModifier)
 			createUnion()
 		end
-		createIcon(combinationIds.keyCode)
+		if bindingIconIds.keyCode then
+			createIcon(bindingIconIds.keyCode)
+		end
+		if bindingIconIds.up
+			or bindingIconIds.down
+			or bindingIconIds.left
+			or bindingIconIds.right
+			or bindingIconIds.forward
+			or bindingIconIds.backward
+		then
+			createIconGroup(bindingIconIds)
+		end
 	end
 
 	self.IconList = iconList
+	self.IconGroupIconsList = iconGroupIconsList
 
 	-- Preload pressed icons (if responsive is enabled)
 	if Settings.ENABLE_RESPONSIVE then
 		-- Build list of temporary ImageLabels to preload
 		local preloadList: {ImageLabel} = {}
-		for _, iconIds in iconList do
+		for _, iconIds in self.IconList do
 			local icon = Instance.new("ImageLabel")
 			icon.Image = iconIds.pressedIconId
 			table.insert(preloadList, icon)
+		end
+		for _, iconList in self.IconGroupIconsList do
+			for _, iconIds in iconList do
+				local icon = Instance.new("ImageLabel")
+				icon.Image = iconIds.pressedIconId
+				table.insert(preloadList, icon)
+			end
 		end
 
 		if #preloadList > 0 then
@@ -342,6 +431,7 @@ function metatable:Update()
 	local frame = self.Frame :: Frame
 	local inputAction = self.InputAction :: InputAction
 	local inputContext = self.InputContext :: InputContext
+	local hintType = self.HintType :: Utilities.HintType
 
 	-- Get Hidden attributes (overrides .Enabled visibility)
 	local contextHidden = inputContext:GetAttribute("Hidden")
@@ -362,12 +452,45 @@ function metatable:Update()
 	local displayName = typeof(customName) == "string" and customName :: string or inputAction.Name
 
 	-- Update label text
-	frame.Label.Text = displayName
+	local label = frame:FindFirstChild("Label")
+	assert(label and label:IsA("TextLabel"), "TextLabel 'Label' not found in Hint Frame '" .. frame.Name .. "'!")
+	label.Text = displayName
 
-	-- Update icon images
+	-- Update singular icons
 	for icon, iconIds in self.IconList :: {[ImageLabel]: IconIds} do
-		local isPressed = Settings.ENABLE_RESPONSIVE and inputAction.Type == Enum.InputActionType.Bool and inputAction:GetState() and true or false
+		local actionState = inputAction:GetState()
+		local isStateActive = actionState ~= 0 and actionState ~= Vector2.zero and actionState ~= Vector3.zero and actionState ~= false
+		local isPressed = Settings.ENABLE_RESPONSIVE and isStateActive
 		icon.Image = isPressed and iconIds.pressedIconId or iconIds.iconId
+	end
+
+	-- Update icon groups for directional hints
+	if hintType == "Directional" then
+		local direction = inputAction:GetState()
+		local pressedIcons = {}  -- renamed for clarity
+
+		if typeof(direction) == "number" then
+			if direction > 0 then pressedIcons.UpIcon = true end
+			if direction < 0 then pressedIcons.DownIcon = true end
+
+		elseif typeof(direction) == "Vector2" or typeof(direction) == "Vector3" then
+			if direction.Y > 0 then pressedIcons.UpIcon = true end
+			if direction.Y < 0 then pressedIcons.DownIcon = true end
+			if direction.X and direction.X < 0 then pressedIcons.LeftIcon = true end
+			if direction.X and direction.X > 0 then pressedIcons.RightIcon = true end
+
+			if typeof(direction) == "Vector3" then
+				if direction.Z < 0 then pressedIcons.ForwardIcon = true end
+				if direction.Z > 0 then pressedIcons.BackwardIcon = true end
+			end
+		end
+
+		for _, iconList in self.IconGroupIconsList :: {[Frame]: {[ImageLabel]: IconIds}} do
+			for icon, iconIds in iconList do
+				local isPressed = Settings.ENABLE_RESPONSIVE and pressedIcons[icon.Name]
+				icon.Image = isPressed and iconIds.pressedIconId or iconIds.iconId
+			end
+		end
 	end
 
 end
@@ -396,25 +519,20 @@ function metatable:Destroy()
 	end
 	self.BindingConnections = nil
 
+	self.HintType = nil
+
 	if self.Frame then
 		self.Frame:Destroy()
 	end
 	self.Frame = nil
 
-	if self.IconTemplate then
-		self.IconTemplate:Destroy()
+	if self.Templates then
+		for _, template in self.Templates do
+			template:Destroy()
+		end
+		table.clear(self.Templates)
 	end
-	self.IconTemplate = nil
-
-	if self.SeparatorTemplate then
-		self.SeparatorTemplate:Destroy()
-	end
-	self.SeparatorTemplate = nil
-
-	if self.UnionTemplate then
-		self.UnionTemplate:Destroy()
-	end
-	self.UnionTemplate = nil
+	self.Templates = nil
 
 	if self.IconList then
 		for _, iconIds in self.IconList do
@@ -423,6 +541,17 @@ function metatable:Destroy()
 		table.clear(self.IconList)
 	end
 	self.IconList = nil
+
+	if self.IconGroupIconsList then
+		for _, iconList in self.IconGroupIconsList do
+			for _, iconIds in iconList do
+				table.clear(iconIds)
+			end
+			table.clear(iconList)
+		end
+		table.clear(self.IconGroupIconsList)
+	end
+	self.IconGroupIconsList = nil
 
 	if self.Connections then
 		for _, connection in self.Connections do
