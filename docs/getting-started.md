@@ -41,7 +41,6 @@ InputBindings can be named however you like. The platform a binding shows on is 
 
 - Keyboard, mouse, and trackpad KeyCodes → shown on PC
 - Gamepad KeyCodes (`Button...`, `DPad...`, `Thumbstick...`) → shown on console
-- Touch KeyCodes → shown on touch devices
 
 To put a binding on a different platform than its KeyCode belongs to, set a [`CustomDevice` attribute](customization/attributes.md) (string) on the InputBinding. See [Device Mapping](customization/device-mapping.md) for how KeyCodes are matched.
 

@@ -112,7 +112,7 @@ Sorting.gamepad_order = {
 }
 
 Sorting.mobile_order = {
-	Enum.KeyCode.Touch,
+	Enum.KeyCode.TouchPosition,
 	-- Add/remove/move as needed.
 }
 
