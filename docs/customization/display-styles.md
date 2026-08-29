@@ -59,13 +59,21 @@ Control Hints makes it easy to create display styles and modify existing ones.
 
 It's important that certain instances of a name and class are present within the display style in order for Control Hints to function properly.
 
-![Example Display Style Structure](../images/example-display-style-structure.png){ width="30%" }
+![Example Display Style Structure](../images/display-style-structure-v2.1.png){ width="30%" }
 
 A display style must contain:
 
 - `Container` Frame to contain all UI elements.
-    - `TemplateHint` Frame, which is what Control Hints clones to generate hints.
-        - `Icon` ImageLabel to display an icon of a KeyCode.
+    - `HintTemplate` Frame, which is what Control Hints clones to generate hints.
+        - `IconGroup` Frame to contain composite icons.
+            - `UpIcon` ImageLabel to display `InputBinding.Up`.
+            - `DownIcon` ImageLabel to display `InputBinding.Down`.
+            - `LeftIcon` ImageLabel to display `InputBinding.Left`.
+            - `RightIcon` ImageLabel to display `InputBinding.Right`.
+            - `ForwardIcon` ImageLabel to display `InputBinding.Forward`.
+            - `BackwardIcon` ImageLabel to display `InputBinding.Backward`.
+            - *Note: The icons (`UpIcon`, `DownIcon`, `LeftIcon`, etc.) can be nested at any depth inside `IconGroup`.*
+        - `Icon` ImageLabel to display a KeyCode.
         - `Label` TextLabel to display the name of the InputAction.
         - Optionally, `Separator` GuiObject to convey a separation between multiple KeyCodes.
             - Example: "X *or* Y to jump"
@@ -86,4 +94,4 @@ To select your new display style, ensure it is parented under the `DisplayStyles
 Settings.DISPLAY_STYLE = DisplayStyles.Classic
 ```
 
-Now, when you test your game, Control Hints will use your display style. If there are any issues with it, Control Hints should error/warn with details on what needs fixing. If you encounter errors, ensure that the [structure](#structure) is sound before reporting to the [DevForum thread](https://devforum.roblox.com/t/control-hints-show-your-ias-bindings-pc-xbox-playstation-mobile/3978604)
+Now, when you test your game, Control Hints will use your display style. If there are any issues with it, Control Hints should error/warn with details on what needs fixing. If you encounter errors, ensure that the [structure](#structure) is sound before reporting to the [DevForum thread](https://devforum.roblox.com/t/control-hints-show-your-ias-bindings-pc-xbox-playstation-mobile/3978604).
