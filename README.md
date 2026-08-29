@@ -15,7 +15,7 @@ An open-source FPS demo game is available to test the capabilities of Control Hi
 [Control Hints: FPS - Roblox](https://www.roblox.com/games/134115175730196/Control-Hints-FPS)
 
 ### ✅ Ready in Four Steps
-1. Grab the free model from [Creator Store](https://create.roblox.com/store/asset/87894581499695/Control-Hints) or download the .rbxm file in the repo
+1. Grab the free model from [Creator Store](https://create.roblox.com/store/asset/87894581499695/Control-Hints) or the [latest release](https://github.com/btc7274/control-hints/releases/latest)
 2. Ungroup the folders in the model in their correct locations
 3. Group all of your InputContexts into a Folder under StarterPlayer -> StarterPlayerScripts
 4. Set ```IAS_SETUP``` in the given LocalScript to your new Folder
