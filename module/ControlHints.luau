@@ -26,35 +26,33 @@ end
 
 
 -- Returns icon asset ID (rbxassetid://...) for KeyCode; empty string if not found
+-- Resolved at call time: gamepad icons use the gamepad type (Xbox/PlayStation) connected right now
 -- specificPlatform: Optionally select a platform to get an icon from
 ControlHints.GetIconId = Utilities.GetIconId
 
 
--- Keeps an ImageLabel showing the correct icon for a KeyCode or InputAction
+-- Keeps an ImageLabel showing the correct icon for an InputAction's current binding
+-- For a static KeyCode, use GetIconId instead; there is nothing to keep updated
 -- imageLabel: The ImageLabel to attach to; its Image is managed until the attachment is destroyed
--- target: A KeyCode, or an InputAction to show the icon of its current binding
--- responsive: Optionally show pressed icons while the InputAction is active (InputActions only)
--- source: Optionally select which of the binding's KeyCodes to show, e.g. "PrimaryModifier" (InputActions only; default "KeyCode")
-function ControlHints.AttachIcon(imageLabel: ImageLabel, target: IconAttachment.Target, responsive: boolean?, source: IconAttachment.Source?)
+-- inputAction: The InputAction to show the icon of its current binding
+-- responsive: Optionally show pressed icons while the InputAction is active
+-- source: Optionally select which of the binding's KeyCodes to show, e.g. "PrimaryModifier" (default "KeyCode")
+function ControlHints.AttachIcon(imageLabel: ImageLabel, inputAction: InputAction, responsive: boolean?, source: IconAttachment.Source?)
 
 	-- Error handling for imageLabel
 	assert(imageLabel, "Instance 'imageLabel' is missing!")
 	assert(typeof(imageLabel) == "Instance" and imageLabel:IsA("ImageLabel"), "'imageLabel' is not an ImageLabel!")
 
-	-- Error handling for target
-	assert(target, "'target' is missing!")
-	if typeof(target) == "EnumItem" then
-		assert(target.EnumType == Enum.KeyCode, "'target' is not a KeyCode, but is a " .. tostring(target.EnumType) .. "!")
-	else
-		assert(typeof(target) == "Instance" and target:IsA("InputAction"), "'target' is not a KeyCode or an InputAction!")
-	end
+	-- Error handling for inputAction
+	assert(inputAction, "Instance 'inputAction' is missing!")
+	assert(typeof(inputAction) == "Instance" and inputAction:IsA("InputAction"), "'inputAction' is not an InputAction! For a static KeyCode, use ControlHints.GetIconId instead.")
 
 	-- Error handling for source
 	if source then
 		assert(typeof(source) == "string" and IconAttachment.IsValidSource(source), "'source' is not a valid KeyCode source! Expected \"KeyCode\", \"PrimaryModifier\", \"SecondaryModifier\", or a direction like \"Up\".")
 	end
 
-	return IconAttachment.new(imageLabel, target, responsive, source)
+	return IconAttachment.new(imageLabel, inputAction, responsive, source)
 
 end
 

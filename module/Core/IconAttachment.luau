@@ -9,8 +9,6 @@ local IconAttachment = {}
 local metatable = {}
 metatable.__index = metatable
 
-export type Target = Enum.KeyCode | InputAction
-
 export type Source = "KeyCode" | "PrimaryModifier" | "SecondaryModifier" | "Up" | "Down" | "Left" | "Right" | "Forward" | "Backward"
 
 -- Maps a Source to its field in Utilities.GetBindingKeyCodes
@@ -33,60 +31,44 @@ function IconAttachment.IsValidSource(source: string): boolean
 end
 
 
--- Keeps an ImageLabel showing the correct icon for a KeyCode or InputAction
-function IconAttachment.new(imageLabel: ImageLabel, target: Target, responsive: boolean?, source: Source?)
+-- Keeps an ImageLabel showing the correct icon for an InputAction's current binding
+function IconAttachment.new(imageLabel: ImageLabel, inputAction: InputAction, responsive: boolean?, source: Source?)
 
 	local self = {}
 	setmetatable(self, metatable)
 
 	-- Set initial values
 	self.ImageLabel = imageLabel
-	self.Target = target
+	self.InputAction = inputAction
 	self.Responsive = responsive == true
 	self.Source = source or "KeyCode"
 	self.Connections = {}
 	self.BindingConnections = {}
-
-	local isAction = typeof(target) == "Instance"
-
-	-- These options only apply to InputAction targets
-	if not isAction and Settings.DEBUG then
-		if self.Responsive then
-			warn("AttachIcon: 'responsive' has no effect for a KeyCode target, since there is no InputAction state to track.")
-		end
-		if source then
-			warn("AttachIcon: 'source' has no effect for a KeyCode target, since there is no InputBinding to select from.")
-		end
-	end
 
 	-- Update when the player's device changes
 	table.insert(self.Connections, UserInputService:GetPropertyChangedSignal("PreferredInput"):Connect(function()
 		self:Update()
 	end))
 
-	-- InputActions update when their bindings or state change
-	if isAction then
-		local inputAction = target :: InputAction
-
-		table.insert(self.Connections, inputAction.ChildAdded:Connect(function(child)
-			if child:IsA("InputBinding") then
-				self:Update()
-			end
-		end))
-		table.insert(self.Connections, inputAction.ChildRemoved:Connect(function(child)
-			if child:IsA("InputBinding") then
-				self:Update()
-			end
-		end))
-		table.insert(self.Connections, inputAction.Destroying:Once(function()
-			self:Destroy()
-		end))
-
-		if self.Responsive then
-			table.insert(self.Connections, inputAction.StateChanged:Connect(function()
-				self:Update()
-			end))
+	-- Update when the InputAction's bindings or state change
+	table.insert(self.Connections, inputAction.ChildAdded:Connect(function(child)
+		if child:IsA("InputBinding") then
+			self:Update()
 		end
+	end))
+	table.insert(self.Connections, inputAction.ChildRemoved:Connect(function(child)
+		if child:IsA("InputBinding") then
+			self:Update()
+		end
+	end))
+	table.insert(self.Connections, inputAction.Destroying:Once(function()
+		self:Destroy()
+	end))
+
+	if self.Responsive then
+		table.insert(self.Connections, inputAction.StateChanged:Connect(function()
+			self:Update()
+		end))
 	end
 
 	-- Clean up when the ImageLabel is destroying
@@ -109,7 +91,7 @@ function metatable:Update()
 	if not self.ImageLabel then return end
 
 	local imageLabel = self.ImageLabel :: ImageLabel
-	local target = self.Target :: Target
+	local inputAction = self.InputAction :: InputAction
 
 	-- Disconnect all binding connections
 	for _, connection in self.BindingConnections do
@@ -122,38 +104,32 @@ function metatable:Update()
 	local displayImage: Content? = nil
 	local isPressed = false
 
-	if typeof(target) == "EnumItem" then
-		keyCode = target :: Enum.KeyCode
-	else
-		local inputAction = target :: InputAction
+	-- Use the first InputBinding that matches the player's device
+	local bindingKeyCodesList = Utilities.GetBindingKeyCodes(inputAction, Utilities.GetInputType())
+	local bindingKeyCodes = bindingKeyCodesList[1]
+	if bindingKeyCodes then
+		-- Select the requested KeyCode from the binding
+		local selected = (bindingKeyCodes :: any)[SOURCE_FIELDS[self.Source]] :: Enum.KeyCode?
+		keyCode = selected or Enum.KeyCode.None
 
-		-- Use the first InputBinding that matches the player's device
-		local bindingKeyCodesList = Utilities.GetBindingKeyCodes(inputAction, Utilities.GetInputType())
-		local bindingKeyCodes = bindingKeyCodesList[1]
-		if bindingKeyCodes then
-			-- Select the requested KeyCode from the binding
-			local selected = (bindingKeyCodes :: any)[SOURCE_FIELDS[self.Source]] :: Enum.KeyCode?
-			keyCode = selected or Enum.KeyCode.None
-
-			-- DisplayImage replaces the binding's main icon only
-			if self.Source == "KeyCode" then
-				displayImage = bindingKeyCodes.displayImage
-			end
+		-- DisplayImage replaces the binding's main icon only
+		if self.Source == "KeyCode" then
+			displayImage = bindingKeyCodes.displayImage
 		end
+	end
 
-		-- Pressed state (if responsive is enabled)
-		if self.Responsive then
-			local actionState = inputAction:GetState()
-			isPressed = actionState ~= 0 and actionState ~= Vector2.zero and actionState ~= Vector3.zero and actionState ~= false
-		end
+	-- Pressed state (if responsive is enabled)
+	if self.Responsive then
+		local actionState = inputAction:GetState()
+		isPressed = actionState ~= 0 and actionState ~= Vector2.zero and actionState ~= Vector3.zero and actionState ~= false
+	end
 
-		-- Update when an InputBinding changes
-		for _, child in inputAction:GetChildren() do
-			if child:IsA("InputBinding") then
-				table.insert(self.BindingConnections, child.Changed:Connect(function()
-					self:Update()
-				end))
-			end
+	-- Update when an InputBinding changes
+	for _, child in inputAction:GetChildren() do
+		if child:IsA("InputBinding") then
+			table.insert(self.BindingConnections, child.Changed:Connect(function()
+				self:Update()
+			end))
 		end
 	end
 
@@ -188,7 +164,7 @@ function metatable:Destroy()
 	self.BindingConnections = nil
 
 	self.ImageLabel = nil
-	self.Target = nil
+	self.InputAction = nil
 	self.Responsive = nil
 	self.Source = nil
 
