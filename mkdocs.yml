@@ -1,0 +1,76 @@
+site_name: control-hints Documentation
+site_description: A modern Luau module for simplified Roblox control hints with Input Action System integration
+site_url: https://btc7274.github.io/control-hints/
+site_author: btc7274
+
+repo_name: control-hints
+repo_url: https://github.com/btc7274/control-hints
+edit_uri: edit/main/docs/
+
+extra:
+  no_mkdocs_2_warning: true
+
+extra_css:
+  - stylesheets/extra.css
+
+plugins:
+  - privacy:
+      links_attr_map:
+        target: _blank
+
+theme:
+  name: material
+  palette:
+    # Light theme (white background) - Blue accent
+    - scheme: default
+      primary: blue
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to dark mode
+    # Optional dark mode (slate) for user preference
+    - scheme: slate
+      primary: blue
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - search.suggest
+    - search.share
+    - content.code.annotate
+    - content.code.copy
+    - content.action.edit
+    - content.tooltips
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+  - pymdownx.superfences
+  - pymdownx.inlinehilite
+  - admonition
+  - pymdownx.details
+  - pymdownx.caret
+  - pymdownx.mark
+  - pymdownx.tilde
+  - def_list
+  - pymdownx.tabbed:
+      alternate_style: true
+  - attr_list
+  - md_in_html
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - API Reference: api-reference.md
+  - Customization:
+      - Overview: customization.md
+      - Settings: customization/settings.md
+      - Icon Sets: customization/icon-sets.md
+      - Display Styles: customization/display-styles.md
+      - Attributes: customization/attributes.md
+      - Sorting: customization/sorting.md
