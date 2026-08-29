@@ -33,8 +33,19 @@ Settings.BASE_ICON_SIZE = 30 -- IconImage size when screen width ≤ MIN_SCREEN_
 Settings.MAX_SCALE_FACTOR = 1.4 -- Final font/icon scale reached when screen width ≥ MAX_SCREEN_WIDTH
 
 
+-- Choose which devices show control hints
+--   • Set a device to false to hide every hint from players using it
+--   • Hints are not created at all while a device is disabled
+Settings.ENABLED_DEVICES = {
+	Keyboard = true,
+	Gamepad = true,
+	Mobile = true
+}
+
+
 -- Tweak to change the LayoutOrder increment for icons
 Settings.INCREMENT = 1
+
 
 
 
@@ -45,6 +56,7 @@ Settings.INCREMENT = 1
 assert(typeof(Settings.ICON_SET) == "table", "Settings.ICON_SET (icon set table) is missing!")
 assert(typeof(Settings.DISPLAY_STYLE) == "Instance" and Settings.DISPLAY_STYLE:IsA("ScreenGui"), "Settings.DISPLAY_STYLE (ScreenGui) is missing!")
 assert(typeof(Settings.INCREMENT) == "number", "Settings.INCREMENT (number) is missing!")
+assert(typeof(Settings.ENABLED_DEVICES) == "table", "Settings.ENABLED_DEVICES (table) is missing!")
 assert(typeof(Settings.DEBUG) == "boolean", "Settings.DEBUG (boolean) is missing!")
 assert(typeof(Settings.ENABLE_RESPONSIVE) == "boolean", "Settings.ENABLE_RESPONSIVE (boolean) is missing!")
 assert(typeof(Settings.ENABLE_DYNAMIC_SCALING) == "boolean", "Settings.ENABLE_DYNAMIC_SCALING (boolean) is missing!")

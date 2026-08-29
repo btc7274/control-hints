@@ -12,9 +12,15 @@ local Hint = {}
 local metatable = {}
 metatable.__index = metatable
 
+-- Pressed icons are preloaded once each, batched across every hint
+local preloadedIds: {[string]: true} = {}
+local pendingIds: {string} = {}
+local isFlushScheduled = false
+
 type IconIds = {
 	iconId: string,
-	pressedIconId: string
+	pressedIconId: string,
+	imageContent: Content?
 }
 
 type BindingIconIds = {
@@ -26,8 +32,44 @@ type BindingIconIds = {
 	left: IconIds?,
 	right: IconIds?,
 	forward: IconIds?,
-	backward: IconIds?
+	backward: IconIds?,
+	displayImage: IconIds?
 }
+
+
+-- Queue an icon asset ID to be preloaded on the next batch
+local function queuePreload(iconId: string)
+
+	if iconId == "" or preloadedIds[iconId] then return end
+	preloadedIds[iconId] = true
+	table.insert(pendingIds, iconId)
+
+	if isFlushScheduled then return end
+	isFlushScheduled = true
+
+	task.defer(function()
+
+		isFlushScheduled = false
+
+		-- PreloadAsync takes Instances, so build one throwaway ImageLabel per icon
+		local preloadList: {ImageLabel} = {}
+		for _, id in pendingIds do
+			local icon = Instance.new("ImageLabel")
+			icon.Image = id
+			table.insert(preloadList, icon)
+		end
+		table.clear(pendingIds)
+
+		ContentProvider:PreloadAsync(preloadList)
+
+		-- Clear memory
+		for _, icon in preloadList do
+			icon:Destroy()
+		end
+
+	end)
+
+end
 
 
 -- Get icon IDs for a KeyCode, or nil
@@ -56,6 +98,7 @@ function Hint.new(inputAction: InputAction, inputContext: InputContext, screenGu
 	self.InputAction = inputAction
 	self.SetupInfo = setupInfo
 	self.Hidden = false
+	self.HasBindings = false
 	self.Content = {}
 	self.BindingConnections = {}
 
@@ -108,11 +151,7 @@ function Hint.new(inputAction: InputAction, inputContext: InputContext, screenGu
 	self:RebuildIcons()
 
 	-- Setup dynamic scaling (if enabled)
-	local isGamepad = UserInputService.PreferredInput == Enum.PreferredInput.Gamepad
-	local useDynamicScaling = Settings.ENABLE_DYNAMIC_SCALING and isGamepad
-	if useDynamicScaling then
-		Utilities.ApplyDynamicScaling(setupInfo.screenWidth, self.Frame)
-	end
+	self:ApplyScaling()
 
 	-- Parent hint to container
 	self.Frame.Parent = container
@@ -164,6 +203,24 @@ function Hint.new(inputAction: InputAction, inputContext: InputContext, screenGu
 	self:Update()
 
 	return self
+
+end
+
+
+-- Applies dynamic scaling to the hint, if it is enabled for the player's device
+function metatable:ApplyScaling()
+
+	-- Skip hints that have been destroyed
+	if not self.Frame then return end
+
+	local isGamepad = UserInputService.PreferredInput == Enum.PreferredInput.Gamepad
+	if not (Settings.ENABLE_DYNAMIC_SCALING and isGamepad) then return end
+
+	-- AbsoluteSize is 0 until the ScreenGui has rendered
+	local screenWidth = self.SetupInfo.screenWidth
+	if screenWidth <= 0 then return end
+
+	Utilities.ApplyDynamicScaling(screenWidth, self.Frame)
 
 end
 
@@ -233,27 +290,37 @@ function metatable:RebuildIcons()
 	-- Get KeyCode combinations
 	local bindingKeyCodesList = Utilities.GetBindingKeyCodes(inputAction, inputType)
 
-	-- Hide hint if InputAction has no InputBindings
-	self.Hidden = #bindingKeyCodesList == 0
-
 	-- Get icon IDs for all of an InputBinding's KeyCodes
 	local bindingIconIdsList: {BindingIconIds} = {}
 	for _, bindingKeyCodes in bindingKeyCodesList do
 		local bindingIconIds: {[string]: IconIds} = {}
-		for property, keyCode in bindingKeyCodes :: {[string]: Enum.KeyCode?} do
-			if keyCode and keyCode ~= Enum.KeyCode.Unknown then
+		for property, keyCode in bindingKeyCodes :: {[string]: any} do
+			-- Skip the display overrides, which are not KeyCodes
+			if typeof(keyCode) ~= "EnumItem" then continue end
+			if keyCode ~= Enum.KeyCode.None then
 				local iconIds = getIconIds(keyCode)
 				if iconIds then
 					bindingIconIds[property] = iconIds
 				end
 			end
 		end
+
+		-- DisplayImage replaces the icon for this binding's KeyCode
+		if bindingKeyCodes.displayImage then
+			bindingIconIds.displayImage = {
+				iconId = "",
+				pressedIconId = "",
+				imageContent = bindingKeyCodes.displayImage
+			}
+		end
+
 		table.insert(bindingIconIdsList, bindingIconIds :: BindingIconIds)
 	end
 
 	local iconList: {[ImageLabel]: IconIds} = {}
 	local iconGroupIconsList: {[Frame]: {[ImageLabel]: IconIds}} = {}
 	local currentOrder = iconTemplate.LayoutOrder
+	local renderedCount = 0
 
 	-- Create a singular icon
 	local function createIcon(iconIds: IconIds)
@@ -267,6 +334,7 @@ function metatable:RebuildIcons()
 		iconList[icon] = iconIds
 		table.insert(self.Content, icon)
 
+		renderedCount += 1
 		currentOrder += Settings.INCREMENT
 
 	end
@@ -304,25 +372,24 @@ function metatable:RebuildIcons()
 		iconGroupIconsList[iconGroup] = iconList2
 		table.insert(self.Content, iconGroup)
 
+		renderedCount += 1
 		currentOrder += Settings.INCREMENT
 
 	end
 
-	-- Create a separator (if it exists)
-	local function createSeparator()
+	-- Create a separator at a reserved LayoutOrder (if it exists)
+	local function createSeparator(layoutOrder: number)
 
 		if separatorTemplate then
 			assert(separatorTemplate:IsA("GuiObject"), "Instance 'Separator' in Frame 'TemplateHint' is not a GuiObject, but is a " .. separatorTemplate.ClassName .. "!")
 			local separator = separatorTemplate:Clone()
 
 			-- Set properties
-			separator.LayoutOrder = currentOrder
+			separator.LayoutOrder = layoutOrder
 			separator.Visible = true
 			separator.Parent = self.Frame
 
 			table.insert(self.Content, separator)
-
-			currentOrder += Settings.INCREMENT
 		end
 
 	end
@@ -349,11 +416,16 @@ function metatable:RebuildIcons()
 	-- Construct icons with separators/unions as appropriate
 	local isFirst = true
 	for _, bindingIconIds in bindingIconIdsList do
+
+		-- Reserve a slot, in case this binding turns out to render something
+		local separatorOrder: number? = nil
 		if not isFirst then
-			createSeparator()
-		else
-			isFirst = false
+			separatorOrder = currentOrder
+			currentOrder += Settings.INCREMENT
 		end
+
+		local countBefore = renderedCount
+
 		if bindingIconIds.secondaryModifier then
 			createIcon(bindingIconIds.secondaryModifier)
 			createUnion()
@@ -362,7 +434,9 @@ function metatable:RebuildIcons()
 			createIcon(bindingIconIds.primaryModifier)
 			createUnion()
 		end
-		if bindingIconIds.keyCode then
+		if bindingIconIds.displayImage then
+			createIcon(bindingIconIds.displayImage)
+		elseif bindingIconIds.keyCode then
 			createIcon(bindingIconIds.keyCode)
 		end
 		if bindingIconIds.up
@@ -374,40 +448,31 @@ function metatable:RebuildIcons()
 		then
 			createIconGroup(bindingIconIds)
 		end
+
+		-- Only separate bindings that actually rendered
+		if renderedCount > countBefore then
+			if separatorOrder then
+				createSeparator(separatorOrder)
+			end
+			isFirst = false
+		end
 	end
+
+	-- Track whether anything was actually rendered for this InputAction
+	self.HasBindings = renderedCount > 0
 
 	self.IconList = iconList
 	self.IconGroupIconsList = iconGroupIconsList
 
 	-- Preload pressed icons (if responsive is enabled)
 	if Settings.ENABLE_RESPONSIVE then
-		-- Build list of temporary ImageLabels to preload
-		local preloadList: {ImageLabel} = {}
 		for _, iconIds in self.IconList do
-			local icon = Instance.new("ImageLabel")
-			icon.Image = iconIds.pressedIconId
-			table.insert(preloadList, icon)
+			queuePreload(iconIds.pressedIconId)
 		end
 		for _, iconList in self.IconGroupIconsList do
 			for _, iconIds in iconList do
-				local icon = Instance.new("ImageLabel")
-				icon.Image = iconIds.pressedIconId
-				table.insert(preloadList, icon)
+				queuePreload(iconIds.pressedIconId)
 			end
-		end
-
-		if #preloadList > 0 then
-			task.defer(function()
-
-				ContentProvider:PreloadAsync(preloadList)
-
-				-- Clear memory
-				for _, icon in preloadList do
-					icon:Destroy()
-				end
-				table.clear(preloadList)
-
-			end)
 		end
 	end
 
@@ -445,7 +510,7 @@ function metatable:Update()
 	end
 
 	-- Update hint visibility
-	frame.Visible = inputContext.Enabled and inputAction.Enabled and not self.Hidden
+	frame.Visible = inputContext.Enabled and inputAction.Enabled and self.HasBindings and not self.Hidden
 
 	-- Get display name for hint
 	local customName = inputAction:GetAttribute("CustomName")
@@ -456,17 +521,23 @@ function metatable:Update()
 	assert(label and label:IsA("TextLabel"), "TextLabel 'Label' not found in Hint Frame '" .. frame.Name .. "'!")
 	label.Text = displayName
 
+	-- Get the InputAction's state once for every icon
+	local actionState = inputAction:GetState()
+	local isStateActive = actionState ~= 0 and actionState ~= Vector2.zero and actionState ~= Vector3.zero and actionState ~= false
+	local isPressed = Settings.ENABLE_RESPONSIVE and isStateActive
+
 	-- Update singular icons
 	for icon, iconIds in self.IconList :: {[ImageLabel]: IconIds} do
-		local actionState = inputAction:GetState()
-		local isStateActive = actionState ~= 0 and actionState ~= Vector2.zero and actionState ~= Vector3.zero and actionState ~= false
-		local isPressed = Settings.ENABLE_RESPONSIVE and isStateActive
-		icon.Image = isPressed and iconIds.pressedIconId or iconIds.iconId
+		if iconIds.imageContent then
+			icon.ImageContent = iconIds.imageContent
+		else
+			icon.Image = isPressed and iconIds.pressedIconId or iconIds.iconId
+		end
 	end
 
 	-- Update icon groups for directional hints
 	if hintType == "Directional" then
-		local direction = inputAction:GetState()
+		local direction = actionState
 		local pressedIcons = {}  -- renamed for clarity
 
 		if typeof(direction) == "number" then
@@ -502,6 +573,7 @@ function metatable:Destroy()
 	self.InputAction = nil
 	self.SetupInfo = nil
 	self.Hidden = nil
+	self.HasBindings = nil
 
 	if self.Content then
 		for _, instance in self.Content do
