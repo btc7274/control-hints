@@ -11,9 +11,30 @@ metatable.__index = metatable
 
 export type Target = Enum.KeyCode | InputAction
 
+export type Source = "KeyCode" | "PrimaryModifier" | "SecondaryModifier" | "Up" | "Down" | "Left" | "Right" | "Forward" | "Backward"
+
+-- Maps a Source to its field in Utilities.GetBindingKeyCodes
+local SOURCE_FIELDS: {[string]: string} = {
+	KeyCode = "keyCode",
+	PrimaryModifier = "primaryModifier",
+	SecondaryModifier = "secondaryModifier",
+	Up = "up",
+	Down = "down",
+	Left = "left",
+	Right = "right",
+	Forward = "forward",
+	Backward = "backward",
+}
+
+
+-- Returns whether a string is a valid Source
+function IconAttachment.IsValidSource(source: string): boolean
+	return SOURCE_FIELDS[source] ~= nil
+end
+
 
 -- Keeps an ImageLabel showing the correct icon for a KeyCode or InputAction
-function IconAttachment.new(imageLabel: ImageLabel, target: Target, responsive: boolean?)
+function IconAttachment.new(imageLabel: ImageLabel, target: Target, responsive: boolean?, source: Source?)
 
 	local self = {}
 	setmetatable(self, metatable)
@@ -22,10 +43,21 @@ function IconAttachment.new(imageLabel: ImageLabel, target: Target, responsive: 
 	self.ImageLabel = imageLabel
 	self.Target = target
 	self.Responsive = responsive == true
+	self.Source = source or "KeyCode"
 	self.Connections = {}
 	self.BindingConnections = {}
 
 	local isAction = typeof(target) == "Instance"
+
+	-- These options only apply to InputAction targets
+	if not isAction and Settings.DEBUG then
+		if self.Responsive then
+			warn("AttachIcon: 'responsive' has no effect for a KeyCode target, since there is no InputAction state to track.")
+		end
+		if source then
+			warn("AttachIcon: 'source' has no effect for a KeyCode target, since there is no InputBinding to select from.")
+		end
+	end
 
 	-- Update when the player's device changes
 	table.insert(self.Connections, UserInputService:GetPropertyChangedSignal("PreferredInput"):Connect(function()
@@ -99,8 +131,14 @@ function metatable:Update()
 		local bindingKeyCodesList = Utilities.GetBindingKeyCodes(inputAction, Utilities.GetInputType())
 		local bindingKeyCodes = bindingKeyCodesList[1]
 		if bindingKeyCodes then
-			keyCode = bindingKeyCodes.keyCode
-			displayImage = bindingKeyCodes.displayImage
+			-- Select the requested KeyCode from the binding
+			local selected = (bindingKeyCodes :: any)[SOURCE_FIELDS[self.Source]] :: Enum.KeyCode?
+			keyCode = selected or Enum.KeyCode.None
+
+			-- DisplayImage replaces the binding's main icon only
+			if self.Source == "KeyCode" then
+				displayImage = bindingKeyCodes.displayImage
+			end
 		end
 
 		-- Pressed state (if responsive is enabled)
@@ -152,6 +190,7 @@ function metatable:Destroy()
 	self.ImageLabel = nil
 	self.Target = nil
 	self.Responsive = nil
+	self.Source = nil
 
 end
 

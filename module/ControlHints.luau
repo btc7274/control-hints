@@ -34,7 +34,8 @@ ControlHints.GetIconId = Utilities.GetIconId
 -- imageLabel: The ImageLabel to attach to; its Image is managed until the attachment is destroyed
 -- target: A KeyCode, or an InputAction to show the icon of its current binding
 -- responsive: Optionally show pressed icons while the InputAction is active (InputActions only)
-function ControlHints.AttachIcon(imageLabel: ImageLabel, target: IconAttachment.Target, responsive: boolean?)
+-- source: Optionally select which of the binding's KeyCodes to show, e.g. "PrimaryModifier" (InputActions only; default "KeyCode")
+function ControlHints.AttachIcon(imageLabel: ImageLabel, target: IconAttachment.Target, responsive: boolean?, source: IconAttachment.Source?)
 
 	-- Error handling for imageLabel
 	assert(imageLabel, "Instance 'imageLabel' is missing!")
@@ -48,7 +49,12 @@ function ControlHints.AttachIcon(imageLabel: ImageLabel, target: IconAttachment.
 		assert(typeof(target) == "Instance" and target:IsA("InputAction"), "'target' is not a KeyCode or an InputAction!")
 	end
 
-	return IconAttachment.new(imageLabel, target, responsive)
+	-- Error handling for source
+	if source then
+		assert(typeof(source) == "string" and IconAttachment.IsValidSource(source), "'source' is not a valid KeyCode source! Expected \"KeyCode\", \"PrimaryModifier\", \"SecondaryModifier\", or a direction like \"Up\".")
+	end
+
+	return IconAttachment.new(imageLabel, target, responsive, source)
 
 end
 
