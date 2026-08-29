@@ -31,7 +31,6 @@ Full documentation is available at [btc7274.github.io/control-hints](https://btc
 The platform an InputBinding shows on is taken from its KeyCode:
 * Keyboard, mouse, and trackpad KeyCodes -> shown to PC players
 * Gamepad KeyCodes (Button..., DPad..., Thumbstick...) -> shown to console players
-* Touch KeyCodes -> shown to mobile players
 
 InputBindings without a KeyCode are skipped, since there is nothing to draw. Your InputContexts and InputActions can be nested inside Folders, so a setup built with the Input Action Manager works as-is.
 
