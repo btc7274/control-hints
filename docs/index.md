@@ -2,7 +2,7 @@
 
 ![Control Hints thumbnail](images/thumbnail.jpg)
 
-**Version 2.1** (April 12, 2026)
+**Version 2.2** (August 28, 2026)
 
 Control Hints is a lightweight Luau module for Roblox that automatically generates professional control hint UI elements based on the [Input Action System (IAS)](https://create.roblox.com/docs/input/input-action-system).
 
