@@ -27,6 +27,8 @@ Organize your IAS setup folder like this:
 
 Control Hints uses the standard IAS setup, which is InputContext → InputAction → InputBinding.
 
+InputContexts and InputActions can be nested inside Folders, so a setup built with the Input Action Manager works without rearranging it.
+
 ### Naming
 
 #### InputActions
@@ -35,11 +37,16 @@ By default, the name of the InputAction is what will be displayed in the UI. You
 
 #### InputBindings
 
-InputBindings show on different platforms depending on the start of their name:
+InputBindings can be named however you like. The platform a binding shows on is taken from its KeyCode:
 
-- Names starting with `Keyboard` → shown on PC
-- Names starting with `Gamepad` → shown on console
-- Names starting with `Mobile` → shown on touch devices
+- Keyboard, mouse, and trackpad KeyCodes → shown on PC
+- Gamepad KeyCodes (`Button...`, `DPad...`, `Thumbstick...`) → shown on console
+- Touch KeyCodes → shown on touch devices
+
+To put a binding on a different platform than its KeyCode belongs to, set a [`CustomDevice` attribute](customization/attributes.md) (string) on the InputBinding. See [Device Mapping](customization/device-mapping.md) for how KeyCodes are matched.
+
+!!! info "Bindings without a KeyCode"
+    An InputBinding with no KeyCode is skipped, since there is no icon to show. This includes mobile bindings that only have a `UIButton`.
 
 ## UI Styling
 

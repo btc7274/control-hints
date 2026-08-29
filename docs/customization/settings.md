@@ -10,6 +10,7 @@ These settings can be found in the `Settings` ModuleScript under `Configuration`
 |--------------------------------|----------|--------------|-----------|
 | `ICON_SET`                     | table    | Kenney       | Icon set to use for keyboard, gamepad, and mobile. |
 | `DISPLAY_STYLE`                | ScreenGui | Classic      | Visual layout template for the hints container. |
+| `ENABLED_DEVICES`              | table    | all true     | Set `Keyboard`, `Gamepad`, or `Mobile` to false to hide every hint from players using that device. |
 | `DEBUG`                        | boolean  | false      | Enables detailed non-critical warnings. |
 | `INCREMENT`                    | number   | 1            | LayoutOrder increment between hint elements (not between hints themselves). |
 | `ENABLE_RESPONSIVE`            | boolean  | true       | Enables visual feedback for pressed actions using `_pressed` icons. |

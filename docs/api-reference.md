@@ -32,5 +32,35 @@ Returns an `rbxassetid://` string if an icon is found, or an empty `""` string i
 **Parameters**:
 
 - `keyCode` (`Enum.KeyCode`): The KeyCode to get the icon for.
-- `specificPlatform` (`("keyboard" | "mobile" | "xbox" | "ps")?`): An optional platform to grab from, regardless of `UserInputService.PreferredInput`.
+- `specificPlatform` (`("keyboard" | "mobile" | "xbox" | "ps")?`): An optional platform to grab from. When omitted, the platform is taken from the KeyCode's own device, so a binding mixing devices still resolves each icon correctly.
 - `isPressed` (`boolean?`): An optional boolean to grab the pressed (active) variant of an icon.
+
+### .GetBindingDevice()
+
+```luau
+Utilities.GetBindingDevice(inputBinding: InputBinding): ("Keyboard" | "Gamepad" | "Mobile")?
+```
+
+Returns the device an InputBinding is shown on, or `nil` if it cannot be determined.
+
+**Parameters**:
+
+- `inputBinding` (`InputBinding`): The InputBinding to match to a device.
+
+A `CustomDevice` attribute is used if there is one. Otherwise the binding's KeyCode is matched, then its directional KeyCodes. A binding with no KeyCode at all returns `nil` and is not displayed.
+
+## DeviceMapping
+
+### .Classify()
+
+```luau
+DeviceMapping.Classify(keyCode: Enum.KeyCode?): ("Keyboard" | "Gamepad" | "Mobile")?
+```
+
+Returns the device a KeyCode belongs to, or `nil` if the KeyCode is `Enum.KeyCode.None` or missing.
+
+**Parameters**:
+
+- `keyCode` (`Enum.KeyCode?`): The KeyCode to match to a device.
+
+See [Device Mapping](customization/device-mapping.md) for how the matching is configured.
