@@ -1,3 +1,11 @@
+# MkDocs build output
+/site/
+/.cache/
+
+# Python
+/venv/
+__pycache__/
+
 # Rojo
 /rojo
 /rojo.zip

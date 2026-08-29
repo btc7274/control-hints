@@ -1,0 +1,15 @@
+/* Limits preview images in icon set section */
+.icon-preview {
+    max-height: 64px;
+    width: auto;
+    display: block;
+    margin: 0 auto; /* Optional: centers the image */
+}
+
+/* Limits preview images in display style section */
+.display-preview {
+    max-height: 240px;
+    width: auto;
+    display: block;
+    margin: 0 auto; /* Optional: centers the image */
+}
