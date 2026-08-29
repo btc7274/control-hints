@@ -20,19 +20,31 @@ An open-source FPS demo game is available to test the capabilities of Control Hi
 3. Group all of your InputContexts into a Folder under StarterPlayer -> StarterPlayerScripts
 4. Set ```IAS_SETUP``` in the given LocalScript to your new Folder
 
+Full documentation is available at [btc7274.github.io/control-hints](https://btc7274.github.io/control-hints/).
+
 
 <details>
 <summary>Example IAS Setup</summary>
 
-<img width="184" height="120" alt="Screenshot 2026-02-14 at 6 59 52 AM" src="https://github.com/user-attachments/assets/e48aff72-9df5-4d51-ab86-691ea0a3d853" />
+<img width="184" height="120" alt="Screenshot 2026-02-14 at 6 59 52 AM" src="https://github.com/user-attachments/assets/e48aff72-9df5-4d51-ab86-691ea0a3d853" />
 
-InputBindings whose name begins with...
-* "Keyboard" -> shown to PC players
-* "Gamepad" -> shown to console players
-* "Mobile" -> shown to mobile players
+The platform an InputBinding shows on is taken from its KeyCode:
+* Keyboard, mouse, and trackpad KeyCodes -> shown to PC players
+* Gamepad KeyCodes (Button..., DPad..., Thumbstick...) -> shown to console players
+* Touch KeyCodes -> shown to mobile players
 
-By default, the name of the InputAction is displayed, but this can be overridden by setting the CustomName attribute (string) for the InputAction. You can also set the CustomOrder attribute (number) to override the auto-sort.
+InputBindings without a KeyCode are skipped, since there is nothing to draw. Your InputContexts and InputActions can be nested inside Folders, so a setup built with the Input Action Manager works as-is.
+
+By default, the name of the InputAction is displayed, but this can be overridden by setting the CustomName attribute (string) for the InputAction. You can also set the CustomOrder attribute (number) to override the auto-sort, or the CustomDevice attribute (string) on an InputBinding to force it onto "Keyboard", "Gamepad", or "Mobile".
 </details>
+
+
+### 🔄 Updating from 2.1
+- **Binding names no longer decide the platform.** A binding's KeyCode does. Existing names like "Keyboard_Jump" are harmless, but a binding whose name disagreed with its KeyCode will now show on the platform its KeyCode belongs to. Use the CustomDevice attribute if you need to force one.
+- **Mouse bindings now appear.** They were previously ignored on PC.
+- **Bindings with no KeyCode are skipped**, including mobile bindings that only have a UIButton. Hints with nothing to show no longer appear with zero icons.
 
 ### ⚠️ Known Limitations
 - Included icons are only for commonly-used keys. Things like numpad keys or function keys are excluded.
+- Mobile InputBindings that use a UIButton instead of a KeyCode are not displayed. A corner-anchored hint cannot point at a button elsewhere on screen.
+- The newer touch and trackpad KeyCodes (TouchDelta, TouchPinch, TrackpadPan, TrackpadPinch) have no icons in the included sets.
