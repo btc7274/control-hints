@@ -2,7 +2,7 @@
 
 ## Installation
 
-1. Download the latest model from the [Roblox Creator Store](https://create.roblox.com/store/asset/87894581499695/Control-Hints) or the `control-hints-creator-store-model.rbxm` file from the [GitHub repository](https://github.com/btc7274/control-hints).
+1. Download the latest model from the [Roblox Creator Store](https://create.roblox.com/store/asset/87894581499695/Control-Hints) or from the [latest GitHub release](https://github.com/btc7274/control-hints/releases/latest).
 
 2. Insert the model into Roblox Studio and ungroup the folders. Check:
     - The ModuleScript `ControlHints` should be in `ReplicatedStorage`.
