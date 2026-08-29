@@ -733,6 +733,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../customization/device-mapping/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Device Mapping
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -873,7 +901,7 @@
 <h2 id="installation">Installation</h2>
 <ol>
 <li>
-<p>Download the latest model from the <a href="https://create.roblox.com/store/asset/87894581499695/Control-Hints" target="_blank" rel="noopener">Roblox Creator Store</a> or the <code>control-hints-creator-store-model.rbxm</code> file from the <a href="https://github.com/btc7274/control-hints" target="_blank" rel="noopener">GitHub repository</a>.</p>
+<p>Download the latest model from the <a href="https://create.roblox.com/store/asset/87894581499695/Control-Hints" target="_blank" rel="noopener">Roblox Creator Store</a> or from the <a href="https://github.com/btc7274/control-hints/releases/latest" target="_blank" rel="noopener">latest GitHub release</a>.</p>
 </li>
 <li>
 <p>Insert the model into Roblox Studio and ungroup the folders. Check:</p>
@@ -900,16 +928,21 @@
 <p>Organize your IAS setup folder like this:</p>
 <p><img alt="Example IAS setup" src="../images/example-ias-setup.png" width="30%" /></p>
 <p>Control Hints uses the standard IAS setup, which is InputContext → InputAction → InputBinding.</p>
+<p>InputContexts and InputActions can be nested inside Folders, so a setup built with the Input Action Manager works without rearranging it.</p>
 <h3 id="naming">Naming</h3>
 <h4 id="inputactions">InputActions</h4>
 <p>By default, the name of the InputAction is what will be displayed in the UI. You can change this behavior by setting a <a href="../customization/attributes/"><code>CustomName</code> attribute</a> (string) to the InputAction.</p>
 <h4 id="inputbindings">InputBindings</h4>
-<p>InputBindings show on different platforms depending on the start of their name:</p>
+<p>InputBindings can be named however you like. The platform a binding shows on is taken from its KeyCode:</p>
 <ul>
-<li>Names starting with <code>Keyboard</code> → shown on PC</li>
-<li>Names starting with <code>Gamepad</code> → shown on console</li>
-<li>Names starting with <code>Mobile</code> → shown on touch devices</li>
+<li>Keyboard, mouse, and trackpad KeyCodes → shown on PC</li>
+<li>Gamepad KeyCodes (<code>Button...</code>, <code>DPad...</code>, <code>Thumbstick...</code>) → shown on console</li>
 </ul>
+<p>To put a binding on a different platform than its KeyCode belongs to, set a <a href="../customization/attributes/"><code>CustomDevice</code> attribute</a> (string) on the InputBinding. See <a href="../customization/device-mapping/">Device Mapping</a> for how KeyCodes are matched.</p>
+<div class="admonition info">
+<p class="admonition-title">Bindings without a KeyCode</p>
+<p>An InputBinding with no KeyCode is skipped, since there is no icon to show. This includes mobile bindings that only have a <code>UIButton</code>.</p>
+</div>
 <h2 id="ui-styling">UI Styling</h2>
 <p>Edit the <code>Settings</code> ModuleScript (under <code>Configuration</code> in the main module) to choose:</p>
 <ul>

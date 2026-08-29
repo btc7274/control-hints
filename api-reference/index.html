@@ -476,6 +476,45 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#getbindingdevice" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        .GetBindingDevice()
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#devicemapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DeviceMapping
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DeviceMapping">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#classify" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        .Classify()
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -711,6 +750,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../customization/device-mapping/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Device Mapping
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -795,6 +862,45 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#getbindingdevice" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        .GetBindingDevice()
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#devicemapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DeviceMapping
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DeviceMapping">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#classify" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        .Classify()
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -846,9 +952,28 @@
 <p><strong>Parameters</strong>:</p>
 <ul>
 <li><code>keyCode</code> (<code>Enum.KeyCode</code>): The KeyCode to get the icon for.</li>
-<li><code>specificPlatform</code> (<code>("keyboard" | "mobile" | "xbox" | "ps")?</code>): An optional platform to grab from, regardless of <code>UserInputService.PreferredInput</code>.</li>
+<li><code>specificPlatform</code> (<code>("keyboard" | "mobile" | "xbox" | "ps")?</code>): An optional platform to grab from. When omitted, the platform is taken from the KeyCode's own device, so a binding mixing devices still resolves each icon correctly.</li>
 <li><code>isPressed</code> (<code>boolean?</code>): An optional boolean to grab the pressed (active) variant of an icon.</li>
 </ul>
+<h3 id="getbindingdevice">.GetBindingDevice()</h3>
+<div class="highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nv">Utilities</span><span class="p">.</span><span class="nf">GetBindingDevice</span><span class="p">(</span><span class="nv">inputBinding</span><span class="p">:</span><span class="w"> </span><span class="nc">InputBinding</span><span class="p">):</span><span class="w"> </span><span class="p">(</span><span class="s2">&quot;Keyboard&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="s2">&quot;Gamepad&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="s2">&quot;Mobile&quot;</span><span class="p">)</span><span class="err">?</span>
+</span></code></pre></div>
+<p>Returns the device an InputBinding is shown on, or <code>nil</code> if it cannot be determined.</p>
+<p><strong>Parameters</strong>:</p>
+<ul>
+<li><code>inputBinding</code> (<code>InputBinding</code>): The InputBinding to match to a device.</li>
+</ul>
+<p>A <code>CustomDevice</code> attribute is used if there is one. Otherwise the binding's KeyCode is matched, then its directional KeyCodes. A binding with no KeyCode at all returns <code>nil</code> and is not displayed.</p>
+<h2 id="devicemapping">DeviceMapping</h2>
+<h3 id="classify">.Classify()</h3>
+<div class="highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nv">DeviceMapping</span><span class="p">.</span><span class="nf">Classify</span><span class="p">(</span><span class="nv">keyCode</span><span class="p">:</span><span class="w"> </span><span class="nc">Enum</span><span class="p">.</span><span class="nc">KeyCode</span><span class="err">?</span><span class="p">):</span><span class="w"> </span><span class="p">(</span><span class="s2">&quot;Keyboard&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="s2">&quot;Gamepad&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="s2">&quot;Mobile&quot;</span><span class="p">)</span><span class="err">?</span>
+</span></code></pre></div>
+<p>Returns the device a KeyCode belongs to, or <code>nil</code> if the KeyCode is <code>Enum.KeyCode.None</code> or missing.</p>
+<p><strong>Parameters</strong>:</p>
+<ul>
+<li><code>keyCode</code> (<code>Enum.KeyCode?</code>): The KeyCode to match to a device.</li>
+</ul>
+<p>See <a href="../customization/device-mapping/">Device Mapping</a> for how the matching is configured.</p>
 
 
 

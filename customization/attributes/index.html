@@ -573,6 +573,24 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Attributes
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
@@ -589,6 +607,36 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#inputbinding-properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        InputBinding properties
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -610,6 +658,34 @@
     
   
     Sorting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../device-mapping/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Device Mapping
   
 
     
@@ -650,6 +726,25 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#inputbinding-properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        InputBinding properties
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -674,7 +769,7 @@
 
 
 <h1 id="attributes">Attributes</h1>
-<p>Attributes can be set on InputActions and InputContexts at runtime (or before) to change how a hint is displayed.</p>
+<p>Attributes can be set on InputContexts, InputActions, and InputBindings at runtime (or before) to change how a hint is displayed.</p>
 <p>For InputActions only:</p>
 <ul>
 <li><code>CustomName</code> (string): Overrides the displayed label text.</li>
@@ -684,6 +779,19 @@
 <ul>
 <li><code>Hidden</code> (boolean): Hides the hint even if the InputContext and InputAction are Enabled.</li>
 </ul>
+<p>For InputBindings only:</p>
+<ul>
+<li><code>CustomDevice</code> (string): Forces the binding onto a platform, whatever its KeyCode. Must be <code>"Keyboard"</code>, <code>"Gamepad"</code>, or <code>"Mobile"</code>. See <a href="../device-mapping/">Device Mapping</a>.</li>
+</ul>
+<h2 id="inputbinding-properties">InputBinding properties</h2>
+<p>Some of Roblox's own InputBinding properties also change how a hint is displayed:</p>
+<ul>
+<li><code>DisplayImage</code> (Content): Replaces the icon shown for that binding, instead of looking one up in the icon set.</li>
+</ul>
+<div class="admonition info">
+<p class="admonition-title">DisplayImage and responsive icons</p>
+<p>A binding with a <code>DisplayImage</code> has no pressed variant, so responsive icons do not apply to it.</p>
+</div>
 
 
 
