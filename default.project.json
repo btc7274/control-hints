@@ -1,0 +1,33 @@
+{
+  "name": "ControlHints",
+  "tree": {
+    "$className": "Folder",
+
+    "ReplicatedStorage": {
+      "$className": "Folder",
+
+      "ControlHints": {
+        "$path": "module/ControlHints.luau",
+
+        "Configuration": {
+          "$className": "Configuration",
+          "DisplayStyles": { "$path": "module/Configuration/DisplayStyles" },
+          "IconSets": { "$path": "module/Configuration/IconSets" },
+          "Settings": { "$path": "module/Configuration/Settings.luau" },
+          "KeyCodeSorting": { "$path": "module/Configuration/KeyCodeSorting.luau" }
+        },
+
+        "Information": { "$path": "module/Information.luau" },
+        "Core": { "$path": "module/Core" }
+      }
+    },
+
+    "StarterGui": {
+      "$className": "Folder",
+      "ControlHintsManager": { "$path": "module/ControlHintsManager.client.luau" }
+    },
+
+    "DeleteMe": { "$path": "packaging/DeleteMe.rbxmx" },
+    "ThumbnailCamera": { "$path": "packaging/ThumbnailCamera.rbxmx" }
+  }
+}
