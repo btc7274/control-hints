@@ -3,6 +3,7 @@ local UserInputService = game:GetService("UserInputService")
 
 -- Classes
 local Hint = require(script.Core.Hint)
+local IconAttachment = require(script.Core.IconAttachment)
 
 -- ModuleScripts
 local Settings = require(script.Configuration.Settings)
@@ -20,6 +21,38 @@ local function clearConnections()
 		connection:Disconnect()
 	end
 	table.clear(connections)
+
+end
+
+
+-- Returns icon asset ID (rbxassetid://...) for KeyCode; empty string if not found
+-- Resolved at call time: gamepad icons use the gamepad type (Xbox/PlayStation) connected right now
+-- specificPlatform: Optionally select a platform to get an icon from
+ControlHints.GetIconId = Utilities.GetIconId
+
+
+-- Keeps an ImageLabel showing the correct icon for an InputAction's current binding
+-- For a static KeyCode, use GetIconId instead; there is nothing to keep updated
+-- imageLabel: The ImageLabel to attach to; its Image is managed until the attachment is destroyed
+-- inputAction: The InputAction to show the icon of its current binding
+-- responsive: Optionally show pressed icons while the InputAction is active
+-- source: Optionally select which of the binding's KeyCodes to show, e.g. "PrimaryModifier" (default "KeyCode")
+function ControlHints.AttachIcon(imageLabel: ImageLabel, inputAction: InputAction, responsive: boolean?, source: IconAttachment.Source?)
+
+	-- Error handling for imageLabel
+	assert(imageLabel, "Instance 'imageLabel' is missing!")
+	assert(typeof(imageLabel) == "Instance" and imageLabel:IsA("ImageLabel"), "'imageLabel' is not an ImageLabel!")
+
+	-- Error handling for inputAction
+	assert(inputAction, "Instance 'inputAction' is missing!")
+	assert(typeof(inputAction) == "Instance" and inputAction:IsA("InputAction"), "'inputAction' is not an InputAction! For a static KeyCode, use ControlHints.GetIconId instead.")
+
+	-- Error handling for source
+	if source then
+		assert(typeof(source) == "string" and IconAttachment.IsValidSource(source), "'source' is not a valid KeyCode source! Expected \"KeyCode\", \"PrimaryModifier\", \"SecondaryModifier\", or a direction like \"Up\".")
+	end
+
+	return IconAttachment.new(imageLabel, inputAction, responsive, source)
 
 end
 
