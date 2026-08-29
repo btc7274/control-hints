@@ -448,6 +448,28 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#attachicon" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        .AttachIcon()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#geticonid" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        .GetIconId()
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -466,7 +488,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#geticonid" class="md-nav__link">
+  <a href="#geticonid_1" class="md-nav__link">
     <span class="md-ellipsis">
       
         .GetIconId()
@@ -778,6 +800,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../customization/custom-ui-icons/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Icons in Custom UI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -834,6 +884,28 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#attachicon" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        .AttachIcon()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#geticonid" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        .GetIconId()
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -852,7 +924,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#geticonid" class="md-nav__link">
+  <a href="#geticonid_1" class="md-nav__link">
     <span class="md-ellipsis">
       
         .GetIconId()
@@ -944,9 +1016,26 @@
 </ul>
 <p>Control Hints actively manages Hint objects to match your IAS setup. It listens for new descendants of the IAS setup and creates unique Hints when possible. Additionally, it will recreate Hints when <code>UserInputService.PreferredInput</code> changes.</p>
 <p>All connections are cleaned up when the ScreenGui is destroyed via <code>Instance:Destroy()</code>.</p>
-<h2 id="utilities">Utilities</h2>
+<h3 id="attachicon">.AttachIcon()</h3>
+<div class="highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nv">ControlHints</span><span class="p">.</span><span class="nf">AttachIcon</span><span class="p">(</span><span class="nv">imageLabel</span><span class="p">:</span><span class="w"> </span><span class="nc">ImageLabel</span><span class="p">,</span><span class="w"> </span><span class="nv">inputAction</span><span class="p">:</span><span class="w"> </span><span class="nc">InputAction</span><span class="p">,</span><span class="w"> </span><span class="nv">responsive</span><span class="p">:</span><span class="w"> </span><span class="nc">boolean</span><span class="err">?</span><span class="p">,</span><span class="w"> </span><span class="nv">source</span><span class="p">:</span><span class="w"> </span><span class="nc">string</span><span class="err">?</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Keeps an ImageLabel showing the correct icon for an InputAction's current binding, and returns a handle. Use this to put button icons in your own UI, including BillboardGuis and SurfaceGuis. See <a href="../customization/custom-ui-icons/">Icons in Custom UI</a>.</p>
+<p><strong>Parameters</strong>:</p>
+<ul>
+<li><code>imageLabel</code> (<code>ImageLabel</code>): The ImageLabel to attach to. Its Image is managed until the attachment is destroyed.</li>
+<li><code>inputAction</code> (<code>InputAction</code>): The InputAction to show the icon of its current binding.</li>
+<li><code>responsive</code> (<code>boolean?</code>): Optionally show pressed icons while the InputAction is active.</li>
+<li><code>source</code> (<code>string?</code>): Optionally select which of the binding's KeyCodes to show: <code>"KeyCode"</code> (default), <code>"PrimaryModifier"</code>, <code>"SecondaryModifier"</code>, <code>"Up"</code>, <code>"Down"</code>, <code>"Left"</code>, <code>"Right"</code>, <code>"Forward"</code>, or <code>"Backward"</code>.</li>
+</ul>
+<p>The icon updates on its own when the player's device changes, when the InputAction's bindings change, and (with <code>responsive</code>) when the InputAction is pressed or released. A binding's <code>DisplayImage</code> is honored for the <code>"KeyCode"</code> source.</p>
+<p>Call <code>handle:Destroy()</code> to release the attachment. It is also released automatically when the ImageLabel or the InputAction is destroyed. Only attach one handle to an ImageLabel at a time.</p>
 <h3 id="geticonid">.GetIconId()</h3>
-<div class="highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nv">Utilities</span><span class="p">.</span><span class="nf">GetIconId</span><span class="p">(</span><span class="nv">keyCode</span><span class="p">:</span><span class="w"> </span><span class="nc">Enum</span><span class="p">.</span><span class="nc">KeyCode</span><span class="p">,</span><span class="w"> </span><span class="nv">specificPlatform</span><span class="p">:</span><span class="w"> </span><span class="p">(</span><span class="s2">"keyboard"</span><span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="s2">"mobile"</span><span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="s2">"xbox"</span><span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="s2">"ps"</span><span class="p">)</span><span class="err">?</span><span class="p">,</span><span class="w"> </span><span class="nv">isPressed</span><span class="p">:</span><span class="w"> </span><span class="nc">boolean</span><span class="err">?</span><span class="p">):</span><span class="w"> </span><span class="nc">string</span>
+<div class="highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nv">ControlHints</span><span class="p">.</span><span class="nf">GetIconId</span><span class="p">(</span><span class="nv">keyCode</span><span class="p">:</span><span class="w"> </span><span class="nc">Enum</span><span class="p">.</span><span class="nc">KeyCode</span><span class="p">,</span><span class="w"> </span><span class="nv">specificPlatform</span><span class="p">:</span><span class="w"> </span><span class="p">(</span><span class="s2">"keyboard"</span><span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="s2">"mobile"</span><span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="s2">"xbox"</span><span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="s2">"ps"</span><span class="p">)</span><span class="err">?</span><span class="p">,</span><span class="w"> </span><span class="nv">isPressed</span><span class="p">:</span><span class="w"> </span><span class="nc">boolean</span><span class="err">?</span><span class="p">):</span><span class="w"> </span><span class="nc">string</span>
+</span></code></pre></div>
+<p>The same function as <a href="#geticonid_1"><code>Utilities.GetIconId</code></a>, exposed at the top level for one-off lookups in custom UI. Resolved at call time: gamepad icons use whichever gamepad type (Xbox/PlayStation) is connected at that moment. For an icon that must stay correct, use <a href="#attachicon"><code>AttachIcon</code></a> with an InputAction.</p>
+<h2 id="utilities">Utilities</h2>
+<h3 id="geticonid_1">.GetIconId()</h3>
+<div class="highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nv">Utilities</span><span class="p">.</span><span class="nf">GetIconId</span><span class="p">(</span><span class="nv">keyCode</span><span class="p">:</span><span class="w"> </span><span class="nc">Enum</span><span class="p">.</span><span class="nc">KeyCode</span><span class="p">,</span><span class="w"> </span><span class="nv">specificPlatform</span><span class="p">:</span><span class="w"> </span><span class="p">(</span><span class="s2">"keyboard"</span><span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="s2">"mobile"</span><span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="s2">"xbox"</span><span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="s2">"ps"</span><span class="p">)</span><span class="err">?</span><span class="p">,</span><span class="w"> </span><span class="nv">isPressed</span><span class="p">:</span><span class="w"> </span><span class="nc">boolean</span><span class="err">?</span><span class="p">):</span><span class="w"> </span><span class="nc">string</span>
 </span></code></pre></div>
 <p>Returns an <code>rbxassetid://</code> string if an icon is found, or an empty <code>""</code> string if not found.</p>
 <p><strong>Parameters</strong>:</p>
@@ -956,7 +1045,7 @@
 <li><code>isPressed</code> (<code>boolean?</code>): An optional boolean to grab the pressed (active) variant of an icon.</li>
 </ul>
 <h3 id="getbindingdevice">.GetBindingDevice()</h3>
-<div class="highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nv">Utilities</span><span class="p">.</span><span class="nf">GetBindingDevice</span><span class="p">(</span><span class="nv">inputBinding</span><span class="p">:</span><span class="w"> </span><span class="nc">InputBinding</span><span class="p">):</span><span class="w"> </span><span class="p">(</span><span class="s2">"Keyboard"</span><span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="s2">"Gamepad"</span><span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="s2">"Mobile"</span><span class="p">)</span><span class="err">?</span>
+<div class="highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nv">Utilities</span><span class="p">.</span><span class="nf">GetBindingDevice</span><span class="p">(</span><span class="nv">inputBinding</span><span class="p">:</span><span class="w"> </span><span class="nc">InputBinding</span><span class="p">):</span><span class="w"> </span><span class="p">(</span><span class="s2">"Keyboard"</span><span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="s2">"Gamepad"</span><span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="s2">"Mobile"</span><span class="p">)</span><span class="err">?</span>
 </span></code></pre></div>
 <p>Returns the device an InputBinding is shown on, or <code>nil</code> if it cannot be determined.</p>
 <p><strong>Parameters</strong>:</p>
@@ -966,7 +1055,7 @@
 <p>A <code>CustomDevice</code> attribute is used if there is one. Otherwise the binding's KeyCode is matched, then its directional KeyCodes. A binding with no KeyCode at all returns <code>nil</code> and is not displayed.</p>
 <h2 id="devicemapping">DeviceMapping</h2>
 <h3 id="classify">.Classify()</h3>
-<div class="highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nv">DeviceMapping</span><span class="p">.</span><span class="nf">Classify</span><span class="p">(</span><span class="nv">keyCode</span><span class="p">:</span><span class="w"> </span><span class="nc">Enum</span><span class="p">.</span><span class="nc">KeyCode</span><span class="err">?</span><span class="p">):</span><span class="w"> </span><span class="p">(</span><span class="s2">"Keyboard"</span><span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="s2">"Gamepad"</span><span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="s2">"Mobile"</span><span class="p">)</span><span class="err">?</span>
+<div class="highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nv">DeviceMapping</span><span class="p">.</span><span class="nf">Classify</span><span class="p">(</span><span class="nv">keyCode</span><span class="p">:</span><span class="w"> </span><span class="nc">Enum</span><span class="p">.</span><span class="nc">KeyCode</span><span class="err">?</span><span class="p">):</span><span class="w"> </span><span class="p">(</span><span class="s2">"Keyboard"</span><span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="s2">"Gamepad"</span><span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="s2">"Mobile"</span><span class="p">)</span><span class="err">?</span>
 </span></code></pre></div>
 <p>Returns the device a KeyCode belongs to, or <code>nil</code> if the KeyCode is <code>Enum.KeyCode.None</code> or missing.</p>
 <p><strong>Parameters</strong>:</p>
