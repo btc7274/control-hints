@@ -39,11 +39,6 @@ By default, the name of the InputAction is displayed, but this can be overridden
 </details>
 
 
-### 🔄 Updating from 2.1
-- **Binding names no longer decide the platform.** A binding's KeyCode does. Existing names like "Keyboard_Jump" are harmless, but a binding whose name disagreed with its KeyCode will now show on the platform its KeyCode belongs to. Use the CustomDevice attribute if you need to force one.
-- **Mouse bindings now appear.** They were previously ignored on PC.
-- **Bindings with no KeyCode are skipped**, including mobile bindings that only have a UIButton. Hints with nothing to show no longer appear with zero icons.
-
 ### ⚠️ Known Limitations
 - Included icons are only for commonly-used keys. Things like numpad keys or function keys are excluded.
 - Mobile InputBindings that use a UIButton instead of a KeyCode are not displayed. A corner-anchored hint cannot point at a button elsewhere on screen.
