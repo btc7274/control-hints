@@ -122,7 +122,7 @@ iconSet.ps = {
 
 -- Mobile touch icon
 iconSet.mobile = {
-	[Enum.KeyCode.Touch] = "rbxassetid://104057783653073",
+	[Enum.KeyCode.TouchPosition] = "rbxassetid://104057783653073",
 }
 
 return iconSet

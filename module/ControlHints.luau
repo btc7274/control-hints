@@ -66,53 +66,76 @@ function ControlHints.CreateUI(iasSetup: Instance, optionalParent: Instance?): S
 		inputType = Utilities.GetInputType()
 	}
 
+	-- Whether hints are shown on the player's current device
+	local deviceEnabled = true
+	local function updateDeviceEnabled()
+		deviceEnabled = Settings.ENABLED_DEVICES[setupInfo.inputType] ~= false
+		controlHintsGui.Enabled = deviceEnabled
+	end
+
 	-- Track InputActions that have hints (avoid duplication)
 	local assignedHints: {[InputAction]: any} = {}
 
-	-- Create a unique Hint object
-	local function createHint(inputAction: InputAction, inputContext: InputContext)
+	-- Create a unique Hint object for an InputAction
+	local function createHint(inputAction: InputAction)
+
+		if not deviceEnabled then return end
 		if assignedHints[inputAction] then return end
+
+		-- InputActions are not required to be direct children of their InputContext
+		local inputContext = inputAction:FindFirstAncestorOfClass("InputContext")
+		if not inputContext then
+			if Settings.DEBUG then
+				warn("InputAction '" .. inputAction.Name .. "' is not a descendant of an InputContext! It will not be displayed.")
+			end
+			return
+		end
+
 		assignedHints[inputAction] = Hint.new(inputAction, inputContext, controlHintsGui, setupInfo)
+
 	end
 
 	-- Create a hint when a descendant is added to iasSetup
 	table.insert(connections, iasSetup.DescendantAdded:Connect(function(descendant)
-		if descendant:IsA("InputContext") then
-			local inputContext = descendant
-			for _, inputAction in inputContext:GetChildren() do
+		if descendant:IsA("InputAction") then
+			createHint(descendant)
+		elseif descendant:IsA("InputContext") then
+			for _, inputAction in descendant:GetDescendants() do
 				if not inputAction:IsA("InputAction") then continue end
-				createHint(inputAction, inputContext)
-			end
-		elseif descendant:IsA("InputAction") then
-			local inputAction = descendant
-			local inputContext = inputAction:FindFirstAncestorOfClass("InputContext")
-			if inputContext then
-				createHint(inputAction, inputContext)
+				createHint(inputAction)
 			end
 		elseif descendant:IsA("InputBinding") then
 			local inputAction = descendant:FindFirstAncestorOfClass("InputAction")
 			if inputAction then
-				local inputContext = inputAction:FindFirstAncestorOfClass("InputContext")
-				if inputContext then
-					createHint(inputAction, inputContext)
-				end
+				createHint(inputAction)
 			end
 		end
 	end))
 
 	-- Populate UI with hints
 	local function populateUI()
-		for _, inputContext in iasSetup:GetChildren() do
-			if not inputContext:IsA("InputContext") then continue end
-			for _, inputAction in inputContext:GetChildren() do
-				if not inputAction:IsA("InputAction") then continue end
-				task.defer(createHint, inputAction, inputContext)
-			end
+		for _, inputAction in iasSetup:GetDescendants() do
+			if not inputAction:IsA("InputAction") then continue end
+			task.defer(createHint, inputAction)
 		end
 	end
 
 	-- Initial update
-	populateUI()
+	updateDeviceEnabled()
+	if deviceEnabled then
+		populateUI()
+	end
+
+	-- Rescale hints when the screen size changes
+	table.insert(connections, controlHintsGui:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
+
+		setupInfo.screenWidth = controlHintsGui.AbsoluteSize.X
+
+		for _, hint in assignedHints do
+			hint:ApplyScaling()
+		end
+
+	end))
 
 	-- Re-populate when PreferredInput changes
 	table.insert(connections, UserInputService:GetPropertyChangedSignal("PreferredInput"):Connect(function()
@@ -127,8 +150,11 @@ function ControlHints.CreateUI(iasSetup: Instance, optionalParent: Instance?): S
 		-- Update setupInfo
 		setupInfo.inputType = Utilities.GetInputType()
 
-		-- Re-populate UI with new hints
-		populateUI()
+		-- Re-populate UI with new hints (if the new device shows them)
+		updateDeviceEnabled()
+		if deviceEnabled then
+			populateUI()
+		end
 
 	end))
 

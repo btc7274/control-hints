@@ -1,0 +1,7 @@
+# Rojo
+/rojo
+/rojo.zip
+*.rbxlx.lock
+
+# macOS
+.DS_Store

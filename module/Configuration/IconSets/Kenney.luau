@@ -275,13 +275,13 @@ iconSet.ps_pressed = {
 
 -- Mobile touch icon
 iconSet.mobile = {
-	[Enum.KeyCode.Touch] = "rbxassetid://108731585520488",
+	[Enum.KeyCode.TouchPosition] = "rbxassetid://108731585520488",
 	-- Add more keys as needed.
 }
 
 -- Mobile touch pressed icon – used when responsive mode is enabled
 iconSet.mobile_pressed = {
-	[Enum.KeyCode.Touch] = "rbxassetid://122395190462889",
+	[Enum.KeyCode.TouchPosition] = "rbxassetid://122395190462889",
 	-- Add more keys as needed.
 }
 
