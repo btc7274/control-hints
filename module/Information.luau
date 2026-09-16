@@ -1,6 +1,6 @@
 --[[
 
-Version 2.2 (released on August 28, 2026)
+Version 2.2.1 (released on September 16, 2026)
 Created by ZurichBT on Roblox
 
 
