@@ -49,6 +49,9 @@ local warnedResponsiveSets: {[any]: true} = {}
 -- KeyCodes that have already warned about a missing icon, keyed by 'table/KeyCode'
 local warnedMissingIcons: {[string]: true} = {}
 
+-- InputBindings that have already warned about stale directions, keyed by full name
+local warnedStaleDirections: {[string]: true} = {}
+
 -- InputBindingType is missing on older clients, so it is resolved safely
 local SCRIPTABLE_BINDING_TYPE: EnumItem? = (function(): EnumItem?
 	local ok, value = pcall(function()
@@ -162,7 +165,8 @@ end
 
 -- Determines the device an InputBinding belongs to, or nil if it cannot be determined
 -- Modifiers are ignored, since the KeyCode they accompany already gives the device
-function Utilities.GetBindingDevice(inputBinding: InputBinding): InputType?
+-- skipDirections excludes the direction properties, for InputActions that cannot use them
+function Utilities.GetBindingDevice(inputBinding: InputBinding, skipDirections: boolean?): InputType?
 
 	-- Use the CustomDevice attribute, if there is one
 	local customDevice = inputBinding:GetAttribute("CustomDevice")
@@ -183,10 +187,12 @@ function Utilities.GetBindingDevice(inputBinding: InputBinding): InputType?
 	end
 
 	-- Directional bindings leave KeyCode as None, so check their directions
-	for _, property in DIRECTION_PROPERTIES do
-		device = DeviceMapping.Classify((inputBinding :: any)[property])
-		if device then
-			return device
+	if not skipDirections then
+		for _, property in DIRECTION_PROPERTIES do
+			device = DeviceMapping.Classify((inputBinding :: any)[property])
+			if device then
+				return device
+			end
 		end
 	end
 
@@ -198,6 +204,11 @@ end
 -- Returns list of all KeyCodes for InputBindings that match the inputType
 function Utilities.GetBindingKeyCodes(inputAction: InputAction, inputType: InputType): {BindingKeyCodes}
 
+	-- Bool InputActions fire from a KeyCode and its modifiers, never from directions
+	-- Switching a composite InputAction to Bool leaves the old directions on its bindings,
+	-- so they are ignored here instead of being displayed alongside the KeyCode
+	local usesDirections = inputAction.Type ~= Enum.InputActionType.Bool
+
 	-- Get all BindingInfos for the InputAction
 	local bindingKeyCodesList: {BindingKeyCodes} = {}
 	for _, inputBinding in inputAction:GetChildren() do
@@ -207,7 +218,7 @@ function Utilities.GetBindingKeyCodes(inputAction: InputAction, inputType: Input
 		if SCRIPTABLE_BINDING_TYPE and inputBinding.Type == SCRIPTABLE_BINDING_TYPE then continue end
 
 		-- Skip bindings with no KeyCode, since there is nothing to display
-		local device = Utilities.GetBindingDevice(inputBinding)
+		local device = Utilities.GetBindingDevice(inputBinding, not usesDirections)
 		if not device then
 			if Settings.DEBUG and not inputBinding.UIButton then
 				warn("InputBinding '" .. inputBinding.Name .. "' in InputAction '" .. inputAction.Name .. "' has no KeyCode or UIButton! It will not be displayed.")
@@ -223,16 +234,30 @@ function Utilities.GetBindingKeyCodes(inputAction: InputAction, inputType: Input
 			displayImage = nil
 		end
 
+		-- Warn once per binding that kept directions it can no longer use
+		if not usesDirections and Settings.DEBUG then
+			local fullName = inputBinding:GetFullName()
+			if not warnedStaleDirections[fullName] then
+				for _, property in DIRECTION_PROPERTIES do
+					if (inputBinding :: any)[property] ~= Enum.KeyCode.None then
+						warnedStaleDirections[fullName] = true
+						warn("InputBinding '" .. inputBinding.Name .. "' in InputAction '" .. inputAction.Name .. "' has direction KeyCodes, but its InputAction is Bool. They will be ignored. Clear them, or set the InputAction back to a composite type.")
+						break
+					end
+				end
+			end
+		end
+
 		table.insert(bindingKeyCodesList, {
 			keyCode = inputBinding.KeyCode,
 			primaryModifier = inputBinding.PrimaryModifier,
 			secondaryModifier = inputBinding.SecondaryModifier,
-			up = inputBinding.Up,
-			down = inputBinding.Down,
-			left = inputBinding.Left,
-			right = inputBinding.Right,
-			forward = inputBinding.Forward,
-			backward = inputBinding.Backward,
+			up = usesDirections and inputBinding.Up or nil,
+			down = usesDirections and inputBinding.Down or nil,
+			left = usesDirections and inputBinding.Left or nil,
+			right = usesDirections and inputBinding.Right or nil,
+			forward = usesDirections and inputBinding.Forward or nil,
+			backward = usesDirections and inputBinding.Backward or nil,
 			displayImage = displayImage
 		} :: BindingKeyCodes)
 	end
