@@ -20,7 +20,8 @@ local isFlushScheduled = false
 type IconIds = {
 	iconId: string,
 	pressedIconId: string,
-	imageContent: Content?
+	imageContent: Content?,
+	keyCode: Enum.KeyCode?
 }
 
 type BindingIconIds = {
@@ -82,7 +83,7 @@ local function getIconIds(keyCode: Enum.KeyCode): IconIds?
 		return nil
 	end
 
-	return {iconId = iconId, pressedIconId = Settings.ENABLE_RESPONSIVE and pressedIconId or ""}
+	return {iconId = iconId, pressedIconId = Settings.ENABLE_RESPONSIVE and pressedIconId or "", keyCode = keyCode}
 
 end
 
@@ -558,7 +559,14 @@ function metatable:Update()
 
 		for _, iconList in self.IconGroupIconsList :: {[Frame]: {[ImageLabel]: IconIds}} do
 			for icon, iconIds in iconList do
-				local isPressed = Settings.ENABLE_RESPONSIVE and pressedIcons[icon.Name]
+
+				-- Prefer the key's own state, so opposing directions do not cancel each other
+				local isDown = Utilities.IsKeyCodeDown(iconIds.keyCode)
+				if isDown == nil then
+					isDown = pressedIcons[icon.Name] == true
+				end
+
+				local isPressed = Settings.ENABLE_RESPONSIVE and isDown
 				icon.Image = isPressed and iconIds.pressedIconId or iconIds.iconId
 			end
 		end

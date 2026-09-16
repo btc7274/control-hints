@@ -25,6 +25,17 @@ local SOURCE_FIELDS: {[string]: string} = {
 }
 
 
+-- Sources that come from a composite InputAction's directions
+local DIRECTION_SOURCES: {[string]: true} = {
+	Up = true,
+	Down = true,
+	Left = true,
+	Right = true,
+	Forward = true,
+	Backward = true,
+}
+
+
 -- Returns whether a string is a valid Source
 function IconAttachment.IsValidSource(source: string): boolean
 	return SOURCE_FIELDS[source] ~= nil
@@ -120,8 +131,21 @@ function metatable:Update()
 
 	-- Pressed state (if responsive is enabled)
 	if self.Responsive then
-		local actionState = inputAction:GetState()
-		isPressed = actionState ~= 0 and actionState ~= Vector2.zero and actionState ~= Vector3.zero and actionState ~= false
+
+		-- A direction's own key is read directly, since the InputAction's state sums its
+		-- directions and opposing keys would cancel each other out
+		-- Every other Source uses the state, so a chord only lights up once it actually fires
+		local isDown: boolean? = nil
+		if DIRECTION_SOURCES[self.Source] then
+			isDown = Utilities.IsKeyCodeDown(keyCode)
+		end
+
+		if isDown ~= nil then
+			isPressed = isDown
+		else
+			local actionState = inputAction:GetState()
+			isPressed = actionState ~= 0 and actionState ~= Vector2.zero and actionState ~= Vector3.zero and actionState ~= false
+		end
 	end
 
 	-- Update when an InputBinding changes

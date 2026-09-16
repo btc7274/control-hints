@@ -163,6 +163,50 @@ function Utilities.GetScaleFactor(screenWidth: number): number
 end
 
 
+-- Whether a KeyCode is currently held, or nil if it cannot be queried
+-- An InputAction's state sums its directions, so opposing keys cancel out and report nothing
+-- Direction icons use this instead, so both keys of an opposing pair still light up
+function Utilities.IsKeyCodeDown(keyCode: Enum.KeyCode?): boolean?
+
+	if not keyCode or keyCode == Enum.KeyCode.None then
+		return nil
+	end
+
+	local device = DeviceMapping.Classify(keyCode)
+	local name = keyCode.Name
+
+	if device == "Keyboard" then
+
+		-- IsKeyDown only covers keys, so pointer inputs fall back to the state
+		if name:sub(1, 5) == "Mouse" or name:sub(1, 8) == "Trackpad" then
+			return nil
+		end
+
+		return UserInputService:IsKeyDown(keyCode)
+
+	elseif device == "Gamepad" then
+
+		-- Thumbsticks are axes rather than buttons, so they fall back to the state
+		if name:sub(1, 10) == "Thumbstick" then
+			return nil
+		end
+
+		for _, gamepad in UserInputService:GetConnectedGamepads() do
+			if UserInputService:IsGamepadButtonDown(gamepad, keyCode) then
+				return true
+			end
+		end
+
+		return false
+
+	end
+
+	-- Mobile bindings have no key to query
+	return nil
+
+end
+
+
 -- Determines the device an InputBinding belongs to, or nil if it cannot be determined
 -- Modifiers are ignored, since the KeyCode they accompany already gives the device
 -- skipDirections excludes the direction properties, for InputActions that cannot use them
