@@ -31,10 +31,10 @@ Keeps an ImageLabel showing the correct icon for an InputAction's current bindin
 
 - `imageLabel` (`ImageLabel`): The ImageLabel to attach to. Its Image is managed until the attachment is destroyed.
 - `inputAction` (`InputAction`): The InputAction to show the icon of its current binding.
-- `responsive` (`boolean?`): Optionally show pressed icons while the InputAction is active.
+- `responsive` (`boolean?`): Optionally show the pressed icon while its key is held. See [Responsive Icons](customization/icon-sets.md#responsive-icons) for how modifiers and bindings are handled.
 - `source` (`string?`): Optionally select which of the binding's KeyCodes to show: `"KeyCode"` (default), `"PrimaryModifier"`, `"SecondaryModifier"`, `"Up"`, `"Down"`, `"Left"`, `"Right"`, `"Forward"`, or `"Backward"`.
 
-The icon updates on its own when the player's device changes, when the InputAction's bindings change, and (with `responsive`) when the InputAction is pressed or released. A binding's `DisplayImage` is honored for the `"KeyCode"` source.
+The icon updates on its own when the player's device changes, when the InputAction's bindings change, and (with `responsive`) when its key is pressed or released. A binding's `DisplayImage` is honored for the `"KeyCode"` source.
 
 Call `handle:Destroy()` to release the attachment. It is also released automatically when the ImageLabel or the InputAction is destroyed. Only attach one handle to an ImageLabel at a time.
 

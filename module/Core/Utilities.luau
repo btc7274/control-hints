@@ -36,6 +36,13 @@ local Utilities = {}
 -- InputBinding properties for composite directions
 local DIRECTION_PROPERTIES = {"Up", "Down", "Left", "Right", "Forward", "Backward"}
 
+-- Mouse button KeyCodes, and the UserInputType they are read through
+local MOUSE_BUTTONS: {[Enum.KeyCode]: Enum.UserInputType} = {
+	[Enum.KeyCode.MouseLeftButton] = Enum.UserInputType.MouseButton1,
+	[Enum.KeyCode.MouseRightButton] = Enum.UserInputType.MouseButton2,
+	[Enum.KeyCode.MouseMiddleButton] = Enum.UserInputType.MouseButton3,
+}
+
 -- Accepted values for an InputBinding's CustomDevice attribute
 local VALID_DEVICES: {[string]: InputType} = {
 	Keyboard = "Keyboard",
@@ -164,8 +171,8 @@ end
 
 
 -- Whether a KeyCode is currently held, or nil if it cannot be queried
--- An InputAction's state sums its directions, so opposing keys cancel out and report nothing
--- Direction icons use this instead, so both keys of an opposing pair still light up
+-- An InputAction's state is shared by all of its bindings and sums its directions, so it
+-- cannot tell which key is held. Icons read their own key with this instead
 function Utilities.IsKeyCodeDown(keyCode: Enum.KeyCode?): boolean?
 
 	if not keyCode or keyCode == Enum.KeyCode.None then
@@ -177,7 +184,13 @@ function Utilities.IsKeyCodeDown(keyCode: Enum.KeyCode?): boolean?
 
 	if device == "Keyboard" then
 
-		-- IsKeyDown only covers keys, so pointer inputs fall back to the state
+		-- Mouse buttons are read through their UserInputType
+		local mouseButton = MOUSE_BUTTONS[keyCode]
+		if mouseButton then
+			return UserInputService:IsMouseButtonPressed(mouseButton)
+		end
+
+		-- IsKeyDown only covers keys, so other pointer inputs fall back to the state
 		if name:sub(1, 5) == "Mouse" or name:sub(1, 8) == "Trackpad" then
 			return nil
 		end
@@ -203,6 +216,47 @@ function Utilities.IsKeyCodeDown(keyCode: Enum.KeyCode?): boolean?
 
 	-- Mobile bindings have no key to query
 	return nil
+
+end
+
+
+-- The KeyCode an InputObject is for, or None
+-- Mouse buttons leave KeyCode as None, so they are mapped from their UserInputType
+function Utilities.GetInputKeyCode(input: InputObject): Enum.KeyCode
+
+	if input.KeyCode ~= Enum.KeyCode.None then
+		return input.KeyCode
+	end
+
+	for keyCode, userInputType in MOUSE_BUTTONS do
+		if input.UserInputType == userInputType then
+			return keyCode
+		end
+	end
+
+	return Enum.KeyCode.None
+
+end
+
+
+-- Whether one of a binding's keys should show as pressed
+-- chain: the binding's keys that must be held before this one, such as a KeyCode's modifiers
+-- Keys that cannot be queried never block the chain
+-- fallback: whether the InputAction's state says this key is pressed, used when it cannot be queried
+function Utilities.IsBindingKeyPressed(keyCode: Enum.KeyCode?, chain: {Enum.KeyCode}, fallback: boolean): boolean
+
+	for _, priorKeyCode in chain do
+		if Utilities.IsKeyCodeDown(priorKeyCode) == false then
+			return false
+		end
+	end
+
+	local isDown = Utilities.IsKeyCodeDown(keyCode)
+	if isDown == nil then
+		return fallback
+	end
+
+	return isDown
 
 end
 
