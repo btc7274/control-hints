@@ -21,7 +21,9 @@ type IconIds = {
 	iconId: string,
 	pressedIconId: string,
 	imageContent: Content?,
-	keyCode: Enum.KeyCode?
+	keyCode: Enum.KeyCode?,
+	chain: {Enum.KeyCode}?,  -- The binding's keys that must be held before this one
+	isFinal: boolean?  -- Whether this is the key that fires the InputAction
 }
 
 type BindingIconIds = {
@@ -168,6 +170,14 @@ function Hint.new(inputAction: InputAction, inputContext: InputContext, screenGu
 	local function doSort()
 		self:Sort()
 	end
+	local function doInputUpdate(input: InputObject)
+		-- Keys are read on their own, so pressing one does not always change the InputAction's state
+		-- None is skipped, since bindings without modifiers leave it in their chains
+		local keyCode = Utilities.GetInputKeyCode(input)
+		if keyCode ~= Enum.KeyCode.None and self.WatchedKeyCodes and self.WatchedKeyCodes[keyCode] then
+			self:Update()
+		end
+	end
 
 	self.Connections = {
 		inputContext.Changed:Connect(doUpdate),
@@ -198,6 +208,11 @@ function Hint.new(inputAction: InputAction, inputContext: InputContext, screenGu
 		inputContext.Destroying:Once(doDestroy),
 		screenGui.Destroying:Once(doDestroy)
 	}
+
+	if Settings.ENABLE_RESPONSIVE then
+		table.insert(self.Connections, UserInputService.InputBegan:Connect(doInputUpdate))
+		table.insert(self.Connections, UserInputService.InputEnded:Connect(doInputUpdate))
+	end
 
 	-- Initial update and sort
 	self:Sort()
@@ -304,6 +319,19 @@ function metatable:RebuildIcons()
 					bindingIconIds[property] = iconIds
 				end
 			end
+		end
+
+		-- Modifiers can be pressed in any order, but both must be held before the rest of the binding
+		local modifiers = {bindingKeyCodes.secondaryModifier, bindingKeyCodes.primaryModifier}
+		for property, iconIds in bindingIconIds do
+			if property == "secondaryModifier" or property == "primaryModifier" then
+				iconIds.chain = {}
+			else
+				iconIds.chain = modifiers
+			end
+		end
+		if bindingIconIds.keyCode then
+			bindingIconIds.keyCode.isFinal = true
 		end
 
 		-- DisplayImage replaces the icon for this binding's KeyCode
@@ -465,17 +493,29 @@ function metatable:RebuildIcons()
 	self.IconList = iconList
 	self.IconGroupIconsList = iconGroupIconsList
 
-	-- Preload pressed icons (if responsive is enabled)
+	-- Preload pressed icons, and track the keys to watch (if responsive is enabled)
+	local watchedKeyCodes: {[Enum.KeyCode]: true} = {}
+	local function prepareIcon(iconIds: IconIds)
+		queuePreload(iconIds.pressedIconId)
+		if iconIds.keyCode then
+			watchedKeyCodes[iconIds.keyCode] = true
+		end
+		for _, keyCode in iconIds.chain or {} do
+			watchedKeyCodes[keyCode] = true
+		end
+	end
+
 	if Settings.ENABLE_RESPONSIVE then
 		for _, iconIds in self.IconList do
-			queuePreload(iconIds.pressedIconId)
+			prepareIcon(iconIds)
 		end
 		for _, iconList in self.IconGroupIconsList do
 			for _, iconIds in iconList do
-				queuePreload(iconIds.pressedIconId)
+				prepareIcon(iconIds)
 			end
 		end
 	end
+	self.WatchedKeyCodes = watchedKeyCodes
 
 	-- Rebuild when an InputBinding changes
 	for _, child in inputAction:GetChildren() do
@@ -525,13 +565,20 @@ function metatable:Update()
 	-- Get the InputAction's state once for every icon
 	local actionState = inputAction:GetState()
 	local isStateActive = actionState ~= 0 and actionState ~= Vector2.zero and actionState ~= Vector3.zero and actionState ~= false
-	local isPressed = Settings.ENABLE_RESPONSIVE and isStateActive
 
 	-- Update singular icons
+	-- Each icon reads its own key, since the state is shared by every binding
+	-- The key that fires the InputAction also needs the state, so it stays dark if pressed out of order
 	for icon, iconIds in self.IconList :: {[ImageLabel]: IconIds} do
 		if iconIds.imageContent then
 			icon.ImageContent = iconIds.imageContent
 		else
+			local isDown = Utilities.IsBindingKeyPressed(iconIds.keyCode, iconIds.chain or {}, isStateActive)
+			if iconIds.isFinal then
+				isDown = isDown and isStateActive
+			end
+
+			local isPressed = Settings.ENABLE_RESPONSIVE and isDown
 			icon.Image = isPressed and iconIds.pressedIconId or iconIds.iconId
 		end
 	end
@@ -561,10 +608,7 @@ function metatable:Update()
 			for icon, iconIds in iconList do
 
 				-- Prefer the key's own state, so opposing directions do not cancel each other
-				local isDown = Utilities.IsKeyCodeDown(iconIds.keyCode)
-				if isDown == nil then
-					isDown = pressedIcons[icon.Name] == true
-				end
+				local isDown = Utilities.IsBindingKeyPressed(iconIds.keyCode, iconIds.chain or {}, pressedIcons[icon.Name] == true)
 
 				local isPressed = Settings.ENABLE_RESPONSIVE and isDown
 				icon.Image = isPressed and iconIds.pressedIconId or iconIds.iconId
@@ -632,6 +676,7 @@ function metatable:Destroy()
 		table.clear(self.IconGroupIconsList)
 	end
 	self.IconGroupIconsList = nil
+	self.WatchedKeyCodes = nil
 
 	if self.Connections then
 		for _, connection in self.Connections do

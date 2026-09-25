@@ -25,17 +25,6 @@ local SOURCE_FIELDS: {[string]: string} = {
 }
 
 
--- Sources that come from a composite InputAction's directions
-local DIRECTION_SOURCES: {[string]: true} = {
-	Up = true,
-	Down = true,
-	Left = true,
-	Right = true,
-	Forward = true,
-	Backward = true,
-}
-
-
 -- Returns whether a string is a valid Source
 function IconAttachment.IsValidSource(source: string): boolean
 	return SOURCE_FIELDS[source] ~= nil
@@ -55,6 +44,7 @@ function IconAttachment.new(imageLabel: ImageLabel, inputAction: InputAction, re
 	self.Source = source or "KeyCode"
 	self.Connections = {}
 	self.BindingConnections = {}
+	self.WatchedKeyCodes = {}
 
 	-- Update when the player's device changes
 	table.insert(self.Connections, UserInputService:GetPropertyChangedSignal("PreferredInput"):Connect(function()
@@ -80,6 +70,17 @@ function IconAttachment.new(imageLabel: ImageLabel, inputAction: InputAction, re
 		table.insert(self.Connections, inputAction.StateChanged:Connect(function()
 			self:Update()
 		end))
+
+		-- Keys are read on their own, so pressing one does not always change the InputAction's state
+		local function onInput(input: InputObject)
+			-- None is skipped, since bindings without modifiers leave it in their chains
+			local keyCode = Utilities.GetInputKeyCode(input)
+			if keyCode ~= Enum.KeyCode.None and self.WatchedKeyCodes and self.WatchedKeyCodes[keyCode] then
+				self:Update()
+			end
+		end
+		table.insert(self.Connections, UserInputService.InputBegan:Connect(onInput))
+		table.insert(self.Connections, UserInputService.InputEnded:Connect(onInput))
 	end
 
 	-- Clean up when the ImageLabel is destroying
@@ -113,6 +114,7 @@ function metatable:Update()
 	-- Resolve the KeyCode to show
 	local keyCode: Enum.KeyCode = Enum.KeyCode.None
 	local displayImage: Content? = nil
+	local chain: {Enum.KeyCode} = {}
 	local isPressed = false
 
 	-- Use the first InputBinding that matches the player's device
@@ -127,24 +129,32 @@ function metatable:Update()
 		if self.Source == "KeyCode" then
 			displayImage = bindingKeyCodes.displayImage
 		end
+
+		-- Modifiers can be pressed in any order, but both must be held before the rest of the binding
+		if self.Source ~= "SecondaryModifier" and self.Source ~= "PrimaryModifier" then
+			chain = {bindingKeyCodes.secondaryModifier, bindingKeyCodes.primaryModifier}
+		end
 	end
 
 	-- Pressed state (if responsive is enabled)
 	if self.Responsive then
 
-		-- A direction's own key is read directly, since the InputAction's state sums its
-		-- directions and opposing keys would cancel each other out
-		-- Every other Source uses the state, so a chord only lights up once it actually fires
-		local isDown: boolean? = nil
-		if DIRECTION_SOURCES[self.Source] then
-			isDown = Utilities.IsKeyCodeDown(keyCode)
+		-- The key is read directly, since the InputAction's state is shared by every binding
+		-- and sums its directions, so it cannot tell which key is held
+		local actionState = inputAction:GetState()
+		local isStateActive = actionState ~= 0 and actionState ~= Vector2.zero and actionState ~= Vector3.zero and actionState ~= false
+		isPressed = Utilities.IsBindingKeyPressed(keyCode, chain, isStateActive)
+
+		-- The KeyCode fires the InputAction, so it also needs the state and stays dark if pressed out of order
+		if self.Source == "KeyCode" then
+			isPressed = isPressed and isStateActive
 		end
 
-		if isDown ~= nil then
-			isPressed = isDown
-		else
-			local actionState = inputAction:GetState()
-			isPressed = actionState ~= 0 and actionState ~= Vector2.zero and actionState ~= Vector3.zero and actionState ~= false
+		-- Watch the keys this icon depends on
+		table.clear(self.WatchedKeyCodes)
+		self.WatchedKeyCodes[keyCode] = true
+		for _, chainKeyCode in chain do
+			self.WatchedKeyCodes[chainKeyCode] = true
 		end
 	end
 
@@ -186,6 +196,7 @@ function metatable:Destroy()
 		table.clear(self.BindingConnections)
 	end
 	self.BindingConnections = nil
+	self.WatchedKeyCodes = nil
 
 	self.ImageLabel = nil
 	self.InputAction = nil

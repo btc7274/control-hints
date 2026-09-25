@@ -12,7 +12,7 @@ local ControlHints = require(ReplicatedStorage.ControlHints)
 local handle = ControlHints.AttachIcon(imageLabel, jumpAction)
 ```
 
-The icon updates on its own when the player switches devices, when the binding changes, and — with the `responsive` option — while the action is pressed:
+The icon updates on its own when the player switches devices, when the binding changes, and — with the `responsive` option — while its key is held:
 
 ```luau
 ControlHints.AttachIcon(imageLabel, jumpAction, true)

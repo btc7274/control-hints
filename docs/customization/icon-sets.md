@@ -67,7 +67,16 @@ Because Control Hints only uses icons when it needs them, there is no need to ha
 
 ### Responsive Icons
 
-Control Hints supports responsive icons where a hint will switch icons to an active/solid variant when its InputAction is pressed.
+Control Hints supports responsive icons where a hint will switch icons to an active/solid variant when its keys are pressed.
+
+Each icon follows its own key, so:
+
+- In a hint with several bindings (`A` or `B`), only the binding being pressed lights up.
+- Modifiers light up as soon as they are held, in any order.
+- The binding's `KeyCode` (or its directions) lights up only once its modifiers are held, so pressing it before them leaves it dark.
+- Opposing directions (`A` and `D`) both light up while held, even though they cancel out.
+
+Thumbsticks, other pointer inputs, and mobile bindings cannot be read on their own, so they light up while the InputAction is active instead.
 
 To enable this functionality:
 
