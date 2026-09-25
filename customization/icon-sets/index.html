@@ -947,7 +947,15 @@
 <p>At runtime, Control Hints will lookup a table for a given platform, then find the <code>rbxassetid://</code> string value for an <code>Enum.KeyCode</code> key. If one is found, an icon will be displayed (otherwise, a warning is produced).</p>
 <p>Because Control Hints only uses icons when it needs them, there is no need to have icons for every platform or KeyCode. Therefore, if you are making a custom icon set, it is recommended to only include icons your game will likely use.</p>
 <h3 id="responsive-icons">Responsive Icons</h3>
-<p>Control Hints supports responsive icons where a hint will switch icons to an active/solid variant when its InputAction is pressed.</p>
+<p>Control Hints supports responsive icons where a hint will switch icons to an active/solid variant when its keys are pressed.</p>
+<p>Each icon follows its own key, so:</p>
+<ul>
+<li>In a hint with several bindings (<code>A</code> or <code>B</code>), only the binding being pressed lights up.</li>
+<li>Modifiers light up as soon as they are held, in any order.</li>
+<li>The binding's <code>KeyCode</code> (or its directions) lights up only once its modifiers are held, so pressing it before them leaves it dark.</li>
+<li>Opposing directions (<code>A</code> and <code>D</code>) both light up while held, even though they cancel out.</li>
+</ul>
+<p>Thumbsticks, other pointer inputs, and mobile bindings cannot be read on their own, so they light up while the InputAction is active instead.</p>
 <p>To enable this functionality:</p>
 <ol>
 <li>

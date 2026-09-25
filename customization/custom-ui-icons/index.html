@@ -868,7 +868,7 @@
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="kd">local</span><span class="w"> </span><span class="nv">handle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">ControlHints</span><span class="p">.</span><span class="nf">AttachIcon</span><span class="p">(</span><span class="nv">imageLabel</span><span class="p">,</span><span class="w"> </span><span class="nv">jumpAction</span><span class="p">)</span>
 </span></code></pre></div>
-<p>The icon updates on its own when the player switches devices, when the binding changes, and — with the <code>responsive</code> option — while the action is pressed:</p>
+<p>The icon updates on its own when the player switches devices, when the binding changes, and — with the <code>responsive</code> option — while its key is held:</p>
 <div class="highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nv">ControlHints</span><span class="p">.</span><span class="nf">AttachIcon</span><span class="p">(</span><span class="nv">imageLabel</span><span class="p">,</span><span class="w"> </span><span class="nv">jumpAction</span><span class="p">,</span><span class="w"> </span><span class="kc">true</span><span class="p">)</span>
 </span></code></pre></div>
 <p>Call <code>handle:Destroy()</code> when you are done. The attachment also cleans itself up when the ImageLabel or the InputAction is destroyed. Only attach one handle to an ImageLabel at a time.</p>
